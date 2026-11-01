@@ -1,0 +1,28 @@
+{
+  "name": "miraai",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/server.ts",
+    "dev": "bun --watch src/server.ts",
+    "build": "bun build src/server.ts --outdir ./dist --target bun",
+    "test": "bun test",
+    "typecheck": "bun check"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^7"
+  },
+  "dependencies": {
+    "@clerk/backend": "^3.26.5",
+    "@google/genai": "^2.32.0",
+    "@supabase/supabase-js": "^2.118.0",
+    "@types/nodemailer": "^8.0.2",
+    "dotenv": "^18.0.9",
+    "nodemailer": "^10.3.1",
+    "sarvamai": "^1.1.14"
+  }
+}

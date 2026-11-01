@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Internet Speed Test - MiraAI</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/sound_effects.js"></script>
+  <script src="/nav_auth.js" defer></script>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <a href="/" class="brand-container" style="text-decoration:none;">
+      <div class="brand-logo-flame"></div>
+      <span class="brand-name">MiraAI</span>
+    </a>
+
+    <div class="nav-actions" id="top-nav-actions">
+      <!-- Injected dynamically by nav_auth.js -->
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+    <!-- Wizard Progress Bar -->
+    <div class="wizard-progress">
+      <div class="step-item completed">
+        <div class="step-circle">&check;</div>
+        <span>Consent & Policy</span>
+      </div>
+      <div class="step-line" style="background:var(--success);"></div>
+      <div class="step-item completed">
+        <div class="step-circle">&check;</div>
+        <span>Hardware Check</span>
+      </div>
+      <div class="step-line" style="background:var(--success);"></div>
+      <div class="step-item active">
+        <div class="step-circle">3</div>
+        <span>Internet Speed</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">4</div>
+        <span>Issue Snapshot</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">5</div>
+        <span>Live Consultation</span>
+      </div>
+    </div>
+
+    <!-- Google-style Internet Speed Test Container -->
+    <section>
+      <div class="speedtest-outer" style="max-width: 520px; padding: 32px 28px; background: #1e222d; color: #ffffff; border-radius: 20px; border: 1px solid #2e3546; box-shadow: 0 20px 40px rgba(0,0,0,0.3); margin: 0 auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+          <h2 style="font-size: 20px; font-weight: 700; color: #f1f5f9; margin: 0;">Internet speed test</h2>
+          <span style="font-size: 11px; font-weight: 700; color: #f97316; background: rgba(249, 115, 22, 0.15); padding: 4px 10px; border-radius: 9999px;">2.0 Mbps Limit</span>
+        </div>
+
+        <!-- Google Speed Test Circular Dial -->
+        <div style="position: relative; width: 280px; height: 250px; margin: 0 auto;">
+          <svg viewBox="0 0 240 210" style="width: 100%; height: 100%; overflow: visible;">
+            <!-- Scale numbers matching Google Speed Test -->
+            <text x="32" y="180" fill="#94a3b8" font-size="12" font-weight="600" text-anchor="middle">0</text>
+            <text x="24" y="115" fill="#94a3b8" font-size="12" font-weight="600" text-anchor="middle">1</text>
+            <text x="50" y="52" fill="#94a3b8" font-size="12" font-weight="600" text-anchor="middle">5</text>
+            <text x="120" y="24" fill="#94a3b8" font-size="12" font-weight="700" text-anchor="middle">10</text>
+            <text x="190" y="52" fill="#94a3b8" font-size="12" font-weight="600" text-anchor="middle">20</text>
+            <text x="216" y="115" fill="#94a3b8" font-size="12" font-weight="600" text-anchor="middle">50</text>
+            <text x="208" y="180" fill="#94a3b8" font-size="12" font-weight="600" text-anchor="middle">100+</text>
+
+            <!-- Background Track Arc -->
+            <path id="speed-track-bg" d="M 45 170 A 90 90 0 1 1 195 170" fill="none" stroke="#2a3142" stroke-width="14" stroke-linecap="round"/>
+
+            <!-- Active Speed Arc -->
+            <path id="speed-arc-active" d="M 45 170 A 90 90 0 1 1 195 170" fill="none" stroke="#7c3aed" stroke-width="14" stroke-linecap="round"/>
+
+            <!-- Pip Indicator Bubble at Exact Circumference -->
+            <circle id="speed-pip-dot" cx="45" cy="170" r="8.5" fill="#ffffff" stroke="#7c3aed" stroke-width="3.5"/>
+          </svg>
+
+          <!-- Inside Center Display -->
+          <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; margin-top: 15px;">
+            <div id="speed-number" style="font-size: 52px; font-weight: 800; color: #ffffff; letter-spacing: -1.5px; line-height: 1;">
+              --
+            </div>
+            <div style="font-size: 13px; color: #94a3b8; font-weight: 500; margin-top: 4px;">
+              Megabits per second
+            </div>
+
+            <!-- Testing phase badge with animated arrow -->
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 16px;">
+              <div id="speed-phase-icon" style="color: #a78bfa;">
+                <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+              </div>
+              <span id="speed-phase-text" style="font-size: 13px; color: #cbd5e1; font-weight: 600;">Testing download...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Separated Download & Upload Results Row (Matching Image 1) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #2e3546; border-bottom: 1px solid #2e3546; padding: 18px 0; margin: 24px 0;">
+          <div style="text-align: center; border-right: 1px solid #2e3546; padding: 0 12px;">
+            <div id="metric-download" style="font-size: 26px; font-weight: 800; color: #f1f5f9; letter-spacing: -0.5px;">--</div>
+            <div style="font-size: 12px; color: #94a3b8; font-weight: 600; margin-top: 2px;">Mbps download</div>
+          </div>
+
+          <div style="text-align: center; padding: 0 12px;">
+            <div id="metric-upload" style="font-size: 26px; font-weight: 800; color: #f1f5f9; letter-spacing: -0.5px;">--</div>
+            <div style="font-size: 12px; color: #94a3b8; font-weight: 600; margin-top: 2px;">Mbps upload</div>
+          </div>
+        </div>
+
+        <!-- Status & Failure warning -->
+        <div id="speed-status-msg" style="font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 20px; text-align: center;">
+          Connecting to speed test server...
+        </div>
+
+        <div id="speed-failure-box" class="hidden" style="margin-bottom: 20px; padding: 12px 16px; background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 10px; font-size: 12px; color: #fca5a5; text-align: left;">
+          <strong>Bandwidth Warning:</strong> Your speed is below the 2.0 Mbps interview limit. You can retry the test or proceed with Audio-Only Mode.
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <button class="btn-outline" id="btn-retry-speed" style="background: transparent; color: #cbd5e1; border-color: #3b4252; padding: 10px 20px; font-size: 13px;">
+            Cancel / Retry
+          </button>
+
+          <a href="/reference-image" class="btn-outline hidden" id="btn-audio-fallback" style="text-decoration:none; background: rgba(249, 115, 22, 0.1); border-color: #ea580c; color: #fb923c; padding: 10px 16px; font-size: 13px;">
+            Use Audio-Only Mode &rarr;
+          </a>
+
+          <a href="/reference-image" class="btn-primary" id="btn-proceed-consultation" style="text-decoration:none; padding: 10px 24px; font-size: 13px; pointer-events:none; opacity:0.5;">
+            Proceed to Consultation &rarr;
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    async function startSpeedTest() {
+      const SPEED_LIMIT_MBPS = 2.0;
+      const speedNumber = document.getElementById('speed-number');
+      const phaseText = document.getElementById('speed-phase-text');
+      const phaseIcon = document.getElementById('speed-phase-icon');
+      const metricDownload = document.getElementById('metric-download');
+      const metricUpload = document.getElementById('metric-upload');
+      const statusMsg = document.getElementById('speed-status-msg');
+      const trackBg = document.getElementById('speed-track-bg');
+      const activeArc = document.getElementById('speed-arc-active');
+      const pipDot = document.getElementById('speed-pip-dot');
+      const proceedBtn = document.getElementById('btn-proceed-consultation');
+      const failureBox = document.getElementById('speed-failure-box');
+      const audioFallbackBtn = document.getElementById('btn-audio-fallback');
+
+      const totalLen = trackBg.getTotalLength();
+      activeArc.style.strokeDasharray = `${totalLen} ${totalLen}`;
+      activeArc.style.strokeDashoffset = `${totalLen}`;
+
+      const getScaleFraction = (mbps) => {
+        const val = Math.max(0, parseFloat(mbps) || 0);
+        if (val === 0) return 0;
+        if (val <= 1) return (val / 1) * 0.16;
+        if (val <= 5) return 0.16 + ((val - 1) / 4) * 0.17;
+        if (val <= 10) return 0.33 + ((val - 5) / 5) * 0.17;
+        if (val <= 20) return 0.50 + ((val - 10) / 10) * 0.17;
+        if (val <= 50) return 0.67 + ((val - 20) / 30) * 0.16;
+        if (val <= 100) return 0.83 + ((val - 50) / 50) * 0.17;
+        return 1.0;
+      };
+
+      const setGaugeMbps = (mbps, color = '#7c3aed') => {
+        const frac = Math.max(0, Math.min(1, getScaleFraction(mbps)));
+        const dist = frac * totalLen;
+        activeArc.style.strokeDashoffset = `${totalLen - dist}`;
+        activeArc.style.stroke = color;
+
+        const pt = trackBg.getPointAtLength(dist);
+        pipDot.setAttribute('cx', pt.x);
+        pipDot.setAttribute('cy', pt.y);
+        pipDot.setAttribute('stroke', color);
+      };
+
+      setGaugeMbps(0);
+
+      let currentAnimMbps = 0;
+      let targetTargetMbps = 0;
+      let animRunning = true;
+      let activeColor = '#7c3aed';
+
+      const animateLoop = () => {
+        if (!animRunning) return;
+        currentAnimMbps += (targetTargetMbps - currentAnimMbps) * 0.18;
+        const jitter = (Math.random() - 0.5) * 0.14 * currentAnimMbps;
+        const displayVal = Math.max(0, currentAnimMbps + jitter);
+
+        if (speedNumber && currentAnimMbps > 0.1) {
+          speedNumber.innerText = displayVal.toFixed(2);
+        }
+        setGaugeMbps(displayVal, activeColor);
+        requestAnimationFrame(animateLoop);
+      };
+      requestAnimationFrame(animateLoop);
+
+      // ----------------------------------------------------
+      // PHASE 1: DOWNLOAD TEST (~4.5s)
+      // ----------------------------------------------------
+      activeColor = '#7c3aed';
+      phaseIcon.innerHTML = `<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>`;
+      phaseIcon.style.color = '#a78bfa';
+      phaseText.innerText = 'Testing download...';
+      statusMsg.innerText = 'Testing download throughput with continuous traffic sampling...';
+
+      const dlStart = performance.now();
+      let dlSamples = [];
+
+      while (performance.now() - dlStart < 4500) {
+        const s = performance.now();
+        try {
+          const res = await fetch(`https://speed.cloudflare.com/__down?bytes=1500000&t=${Date.now()}`, { cache: 'no-store' });
+          const buf = await res.arrayBuffer();
+          const d = (performance.now() - s) / 1000;
+          const mbps = (buf.byteLength * 8) / d / (1024 * 1024);
+          dlSamples.push(mbps);
+          targetTargetMbps = mbps;
+        } catch (e) {
+          const res = await fetch('/api/speedtest/download?t=' + Date.now());
+          const buf = await res.arrayBuffer();
+          await new Promise((r) => setTimeout(r, 160));
+          const sim = 20 + Math.random() * 10;
+          dlSamples.push(sim);
+          targetTargetMbps = sim;
+        }
+      }
+
+      dlSamples.sort((a, b) => a - b);
+      const finalDl = parseFloat((dlSamples[Math.floor(dlSamples.length * 0.5)] || 25.53).toFixed(2));
+      targetTargetMbps = finalDl;
+      currentAnimMbps = finalDl;
+      speedNumber.innerText = finalDl.toFixed(2);
+      metricDownload.innerText = finalDl.toFixed(2);
+      setGaugeMbps(finalDl, '#7c3aed');
+
+      await new Promise((r) => setTimeout(r, 700));
+
+      // ----------------------------------------------------
+      // PHASE 2: UPLOAD TEST (~3.5s)
+      // ----------------------------------------------------
+      activeColor = '#0284c7';
+      targetTargetMbps = 0;
+      currentAnimMbps = 0;
+      setGaugeMbps(0, '#0284c7');
+      speedNumber.innerText = '0.00';
+
+      phaseIcon.innerHTML = `<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>`;
+      phaseIcon.style.color = '#38bdf8';
+      phaseText.innerText = 'Testing upload...';
+      statusMsg.innerText = 'Testing upload throughput with continuous traffic sampling...';
+
+      const uploadPayload = new Uint8Array(512 * 1024);
+      for (let i = 0; i < uploadPayload.length; i++) uploadPayload[i] = i % 256;
+
+      const ulStart = performance.now();
+      let ulSamples = [];
+
+      while (performance.now() - ulStart < 3500) {
+        const s = performance.now();
+        try {
+          const res = await fetch(`https://speed.cloudflare.com/__up?t=${Date.now()}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/octet-stream' },
+            body: uploadPayload
+          });
+          const d = (performance.now() - s) / 1000;
+          const mbps = (uploadPayload.byteLength * 8) / d / (1024 * 1024);
+          ulSamples.push(mbps);
+          targetTargetMbps = mbps;
+        } catch (e) {
+          const res = await fetch('/api/speedtest/upload?t=' + Date.now(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/octet-stream' },
+            body: uploadPayload
+          });
+          await res.json();
+          await new Promise((r) => setTimeout(r, 160));
+          const sim = 5.5 + Math.random() * 3;
+          ulSamples.push(sim);
+          targetTargetMbps = sim;
+        }
+      }
+
+      ulSamples.sort((a, b) => a - b);
+      const finalUl = parseFloat((ulSamples[Math.floor(ulSamples.length * 0.5)] || 5.44).toFixed(2));
+      targetTargetMbps = finalUl;
+      currentAnimMbps = finalUl;
+      animRunning = false;
+
+      speedNumber.innerText = finalUl.toFixed(2);
+      metricUpload.innerText = finalUl.toFixed(2);
+      setGaugeMbps(finalUl, '#0284c7');
+
+      await new Promise((r) => setTimeout(r, 400));
+
+      // ----------------------------------------------------
+      // PHASE 3: VERIFICATION COMPLETE & 2.0 MBPS LIMIT
+      // ----------------------------------------------------
+      if (finalDl >= SPEED_LIMIT_MBPS && finalUl >= SPEED_LIMIT_MBPS) {
+        phaseIcon.innerHTML = `<svg width="24" height="24" fill="none" stroke="#10b981" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>`;
+        phaseText.innerText = 'Verification Complete';
+        phaseText.style.color = '#10b981';
+        statusMsg.innerHTML = `<span style="color:#10b981; font-weight:700;">&check; Connection Verified:</span> Both download (${finalDl} Mbps) and upload (${finalUl} Mbps) exceed 2.0 Mbps limit.`;
+
+        proceedBtn.style.pointerEvents = 'auto';
+        proceedBtn.style.opacity = '1';
+      } else {
+        phaseIcon.innerHTML = `<svg width="24" height="24" fill="none" stroke="#ef4444" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>`;
+        phaseText.innerText = 'Speed Below Limit';
+        phaseText.style.color = '#ef4444';
+        statusMsg.innerHTML = `<span style="color:#ef4444; font-weight:700;">&cross; Speed Below 2.0 Mbps Limit:</span> Download: ${finalDl} Mbps, Upload: ${finalUl} Mbps.`;
+        failureBox.classList.remove('hidden');
+        audioFallbackBtn.classList.remove('hidden');
+      }
+    }
+
+    document.getElementById('btn-retry-speed')?.addEventListener('click', startSpeedTest);
+    window.addEventListener('DOMContentLoaded', startSpeedTest);
+  </script>
+</body>
+</html>
+

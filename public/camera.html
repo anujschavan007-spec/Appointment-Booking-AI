@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Device & Environment Verification - MiraAI</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/sound_effects.js"></script>
+  <script src="/nav_auth.js" defer></script>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <a href="/" class="brand-container" style="text-decoration:none;">
+      <div class="brand-logo-flame"></div>
+      <span class="brand-name">MiraAI</span>
+    </a>
+
+    <div class="nav-actions" id="top-nav-actions">
+      <!-- Injected dynamically by nav_auth.js -->
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+    <!-- Wizard Progress Bar -->
+    <div class="wizard-progress">
+      <div class="step-item completed">
+        <div class="step-circle">&check;</div>
+        <span>Consent & Policy</span>
+      </div>
+      <div class="step-line" style="background:var(--success);"></div>
+      <div class="step-item active">
+        <div class="step-circle">2</div>
+        <span>Hardware Check</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <span>Internet Speed</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">4</div>
+        <span>Issue Snapshot</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">5</div>
+        <span>Live Consultation</span>
+      </div>
+    </div>
+
+    <!-- Hardware Check Section (Matching Image 3) -->
+    <section>
+      <div style="text-align:center; margin-bottom:32px;">
+        <h2 style="font-size:26px; font-weight:800; color:#0f172a; margin-bottom:6px;">Device & Environment Verification</h2>
+        <p style="font-size:14px; color:var(--text-muted);">Verify your camera, microphone, speaker, and network stability before meeting Mira.</p>
+      </div>
+
+      <div class="device-check-grid">
+        <div class="webcam-preview-box">
+          <video id="webcam-preview" autoplay playsinline muted></video>
+          <div class="webcam-badge">
+            <span class="live-dot" style="background:#4ade80;"></span>
+            Camera Active
+          </div>
+        </div>
+
+        <div class="checklist-col">
+          <div class="check-item-card">
+            <div class="check-item-info" style="width:100%;">
+              <h4>Microphone Input <span style="float:right; color:#10b981; font-weight:700;">&check; Active</span></h4>
+              <p>Voice detected clearly: Optimal volume</p>
+              <div class="vu-meter-bar">
+                <div class="vu-meter-fill" id="vu-meter-fill"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="check-item-card">
+            <div class="check-item-info">
+              <h4>Audio Output (Speaker)</h4>
+              <p>Hear Mira's voice clearly</p>
+            </div>
+            <button class="btn-outline" id="btn-speaker-test" style="padding:8px 16px; font-size:13px;">
+              Play Sound Test
+            </button>
+          </div>
+
+          <div class="check-item-card">
+            <div class="check-item-info">
+              <h4>Hospital Network</h4>
+              <p>Latency: 18ms (Optimal &bull; 100% Signal)</p>
+            </div>
+            <span style="color:#10b981; font-weight:700;">&check; Optimal</span>
+          </div>
+
+          <div class="check-item-card">
+            <div class="check-item-info">
+              <h4>Real-Time Voice Engine</h4>
+              <p>WebSpeech Recognition & Synthesis (Mira Voice Ready)</p>
+            </div>
+            <span style="color:#10b981; font-weight:700;">&check; Ready</span>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; margin-top:12px;">
+            <a href="/consent" class="btn-outline" style="text-decoration:none;">&larr; Back to Consent</a>
+            <a href="/speed-check" class="btn-primary" style="text-decoration:none;">Proceed to Internet Speed Check &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let mediaStream = null;
+
+    async function initCamera() {
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: { echoCancellation: true, noiseSuppression: true }
+        });
+        const video = document.getElementById('webcam-preview');
+        if (video) video.srcObject = mediaStream;
+
+        // Audio VU meter
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioCtx();
+        const src = ctx.createMediaStreamSource(mediaStream);
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 256;
+        src.connect(analyser);
+
+        const data = new Uint8Array(analyser.frequencyBinCount);
+        const vuBar = document.getElementById('vu-meter-fill');
+
+        function loop() {
+          analyser.getByteFrequencyData(data);
+          let sum = 0;
+          for (let i = 0; i < data.length; i++) sum += data[i];
+          const avg = sum / data.length;
+          const pct = Math.min(100, Math.round((avg / 128) * 100));
+          if (vuBar) vuBar.style.width = pct + '%';
+          requestAnimationFrame(loop);
+        }
+        loop();
+      } catch (err) {
+        console.warn('Camera error:', err);
+      }
+    }
+
+    document.getElementById('btn-speaker-test')?.addEventListener('click', () => {
+      if (window.soundEffects) {
+        window.soundEffects.playSpeakerTestChime();
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', initCamera);
+  </script>
+</body>
+</html>
+

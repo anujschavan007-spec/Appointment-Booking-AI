@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MiraAI - Clinical Consultation & Doctor Appointment Platform</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/sound_effects.js"></script>
+  <script src="/nav_auth.js" defer></script>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <a href="/" class="brand-container" style="text-decoration:none;">
+      <div class="brand-logo-flame"></div>
+      <span class="brand-name">MiraAI</span>
+    </a>
+
+    <div class="nav-actions" id="top-nav-actions">
+      <!-- Injected dynamically by nav_auth.js -->
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+    <!-- Hero Section (Matching Image 1) -->
+    <section id="screen-landing">
+      <div class="hero-grid">
+        <div class="hero-text-col">
+          <div class="badge-tag">
+            <span>Clinical Voice AI & Doctor Triage</span>
+          </div>
+          <h1 class="hero-title">
+            The Next-Generation <span>MiraAI</span> Clinical Consultation Platform
+          </h1>
+          <p class="hero-desc">
+            Experience an intelligent, code-mixed Hinglish voice consultation powered by MiraAI. Real medical symptom intake, disease spot visual inspection, zero examiner bias, and instant appointment booking stored directly in the hospital database.
+          </p>
+
+          <div class="cta-row">
+            <a href="/consent" class="btn-primary" id="btn-start-consultation" style="text-decoration:none;">
+              Start Consultation &rarr;
+            </a>
+            <a href="/consent" class="btn-outline" id="btn-explore-flow" style="text-decoration:none;">
+              Explore Clinical Flow
+            </a>
+          </div>
+
+          <div class="trust-badges-row">
+            <div>100% HIPAA Protected</div>
+            <div>Sub-Second Voice AI</div>
+            <div>Multi-Specialty Clinic</div>
+            <div>Hospital Grade</div>
+          </div>
+        </div>
+
+        <!-- Hero Cockpit Card (Right) -->
+        <div class="cockpit-card">
+          <div class="cockpit-header">
+            <div class="live-indicator">
+              <span class="live-dot"></span>
+              MiraAI LIVE COCKPIT #MIRA-2026-MED
+            </div>
+            <div>Latency 18ms</div>
+            <div style="color:#4ade80;">99.8% Integrity</div>
+          </div>
+
+          <div class="cockpit-body">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+              <div class="brand-logo-flame" style="width:26px; height:26px;"></div>
+              <div>
+                <strong style="font-size:14px; color:#ffffff;">Mira AI Physician</strong>
+                <div style="font-size:11px; color:#f97316;">Active Voice Session (Hinglish)</div>
+              </div>
+            </div>
+
+            <div class="cockpit-speaking-tag">MIRA IS SPEAKING</div>
+            <div class="cockpit-quote">
+              "Namaste! Aapko bukhar ya chest discomfort kab se ho raha hai, aur kya skin par koi spot ya rash visible hai?"
+            </div>
+
+            <div class="cockpit-tip-box">
+              Adaptive triage queued: Automated slot proposal & clinical summary.
+            </div>
+          </div>
+
+          <div class="waveform-box">
+            <div class="waveform-header">
+              <span>LIVE CANDIDATE VOICE WAVEFORM</span>
+              <span style="color:#4ade80;">Full-Duplex Audio Ingest</span>
+            </div>
+            <div class="bars-visualizer">
+              <div class="vbar"></div><div class="vbar"></div><div class="vbar"></div>
+              <div class="vbar"></div><div class="vbar"></div><div class="vbar"></div>
+              <div class="vbar"></div><div class="vbar"></div><div class="vbar"></div>
+            </div>
+          </div>
+
+          <div class="status-badges-row">
+            <div>HD Camera Live</div>
+            <div>Screen / Audio Monitored</div>
+            <div>Sub-600ms Turn Latency</div>
+          </div>
+
+          <div style="margin-top:16px;">
+            <a href="/consent" class="btn-primary" style="text-decoration:none; display:block; text-align:center;">
+              Join Live Consultation &rarr;
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById('btn-start-consultation')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (window.soundEffects) {
+        window.soundEffects.playConsentTone();
+      }
+      setTimeout(() => {
+        window.location.href = '/consent';
+      }, 150);
+    });
+  </script>
+</body>
+</html>

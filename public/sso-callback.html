@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authenticating - MiraAI</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #fafafa;
+      margin: 0;
+    }
+    .loading-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 36px 40px;
+      text-align: center;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+      max-width: 420px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid #ffccbc;
+      border-top-color: #ff5722;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 18px auto;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 8px 0;
+    }
+    .desc {
+      font-size: 13px;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-card">
+    <div class="spinner"></div>
+    <div class="title">Completing secure authentication...</div>
+    <div class="desc" id="status-text">Verifying your Google / GitHub credentials with Clerk</div>
+  </div>
+
+  <script>
+    window.addEventListener('load', async () => {
+      const statusText = document.getElementById('status-text');
+      try {
+        const cfg = await fetch('/api/auth/config').then(r => r.json());
+        if (cfg.publishableKey) {
+          window.__clerk_publishable_key = cfg.publishableKey;
+
+          let frontendApi = '';
+          try {
+            const b64 = cfg.publishableKey.split('_')[2];
+            if (b64) {
+              frontendApi = window.atob(b64).replace(/\$$/, '').trim();
+            }
+          } catch {}
+
+          const scriptSrc = frontendApi
+            ? `https://${frontendApi}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`
+            : 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+
+          if (!window.Clerk) {
+            await new Promise((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = scriptSrc;
+              script.async = true;
+              script.crossOrigin = 'anonymous';
+              script.setAttribute('data-clerk-publishable-key', cfg.publishableKey);
+              script.onload = () => resolve();
+              script.onerror = () => {
+                const fallbackScript = document.createElement('script');
+                fallbackScript.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+                fallbackScript.async = true;
+                fallbackScript.crossOrigin = 'anonymous';
+                fallbackScript.setAttribute('data-clerk-publishable-key', cfg.publishableKey);
+                fallbackScript.onload = () => resolve();
+                fallbackScript.onerror = (err) => reject(err);
+                document.head.appendChild(fallbackScript);
+              };
+              document.head.appendChild(script);
+            });
+          }
+
+          if (window.Clerk) {
+            await window.Clerk.load();
+            const clerk = window.Clerk;
+
+            try {
+              await clerk.handleRedirectCallback({
+                afterSignInUrl: '/sso-callback',
+                afterSignUpUrl: '/sso-callback',
+              });
+            } catch (callBackErr) {
+              console.warn('[Clerk] Callback handling note:', callBackErr);
+            }
+
+            if (clerk.user) {
+              const email = clerk.user.primaryEmailAddress?.emailAddress || (clerk.user.emailAddresses && clerk.user.emailAddresses[0]?.emailAddress) || '';
+              const fullName = clerk.user.fullName || (clerk.user.firstName ? (clerk.user.firstName + ' ' + (clerk.user.lastName || '')) : email.split('@')[0]);
+              const token = await clerk.session?.getToken();
+
+              statusText.innerText = 'Creating authenticated session...';
+              const res = await fetch('/api/auth/session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, fullName, token }),
+              });
+              const data = await res.json();
+
+              localStorage.setItem('mira_user_email', data.user.email);
+              localStorage.setItem('mira_user_role', data.user.role);
+              localStorage.setItem('mira_user_name', data.user.fullName);
+
+              if (data.user.isAdmin) {
+                statusText.innerText = 'Super Admin confirmed. Opening Admin Dashboard...';
+                window.location.href = '/admin/dashboard';
+              } else {
+                statusText.innerText = 'Redirecting to your Patient Dashboard...';
+                window.location.href = '/user/dashboard';
+              }
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('SSO callback processing error:', err);
+      }
+
+      // Fallback if no user session found
+      statusText.innerText = 'Session expired or not found. Redirecting to sign-in...';
+      setTimeout(() => {
+        window.location.href = '/sign-in';
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
+

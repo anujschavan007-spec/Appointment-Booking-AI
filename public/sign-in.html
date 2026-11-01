@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - MiraAI</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/sound_effects.js"></script>
+  <style>
+    body {
+      background: #fafafa;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .auth-modal-card {
+      max-width: 440px;
+      width: 100%;
+      margin: 40px auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 32px 30px;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      color: #94a3b8;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    .close-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .flame-center {
+      width: 38px;
+      height: 38px;
+      margin: 0 auto 14px auto;
+      background: radial-gradient(circle at 35% 35%, #ff8a65, #ff5722 65%, #d84315);
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      box-shadow: 0 2px 10px rgba(255, 87, 34, 0.35);
+    }
+
+    .auth-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+      margin: 0 0 6px 0;
+    }
+
+    .auth-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin: 0;
+    }
+
+    .auth-subtitle span {
+      color: #ff5722;
+      font-weight: 700;
+    }
+
+    /* Social OAuth Buttons */
+    .social-btn-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .oauth-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      padding: 11px 16px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1e293b;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-sizing: border-box;
+    }
+
+    .oauth-btn:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    /* Divider */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 20px 0;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+    }
+
+    .or-divider::before,
+    .or-divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .or-divider span {
+      padding: 0 12px;
+    }
+
+    /* Input with icons */
+    .input-icon-wrapper {
+      position: relative;
+      margin-bottom: 14px;
+    }
+
+    .field-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      pointer-events: none;
+    }
+
+    .icon-input {
+      width: 100%;
+      padding: 12px 14px 12px 42px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 14px;
+      color: #0f172a;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .icon-input:focus {
+      border-color: #ff5722;
+      box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.12);
+    }
+
+    .btn-submit-orange {
+      width: 100%;
+      background: #ff5722;
+      color: #ffffff;
+      border: none;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+      transition: background 0.15s ease;
+      box-shadow: 0 4px 12px rgba(255, 87, 34, 0.25);
+    }
+
+    .btn-submit-orange:hover {
+      background: #f4511e;
+    }
+
+    .auth-alert-box {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .auth-alert-error {
+      background: #fee2e2;
+      border: 1px solid #fecdd3;
+      color: #b91c1c;
+    }
+
+    .auth-alert-info {
+      background: #fff7ed;
+      border: 1px solid #ffedd5;
+      color: #c2410c;
+    }
+
+    .auth-footer {
+      text-align: center;
+      margin-top: 22px;
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .auth-footer a {
+      color: #ff5722;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+
+  </style>
+</head>
+<body>
+
+  <!-- Top Minimal Nav -->
+  <header class="top-nav">
+    <a href="/" class="brand-container" style="text-decoration:none;">
+      <div class="brand-logo-flame"></div>
+      <span class="brand-name">MiraAI</span>
+    </a>
+
+    <div class="nav-actions">
+      <a href="/" class="btn-primary" style="text-decoration:none; padding:7px 14px; font-size:13px;">Home</a>
+    </div>
+  </header>
+
+  <main style="flex:1; display:flex; align-items:center; justify-content:center; padding: 20px;">
+    <div class="auth-modal-card">
+      <a href="/" class="close-btn" title="Close">&times;</a>
+
+      <!-- Header Matching User Reference Image -->
+      <div class="auth-header">
+        <div class="flame-center"></div>
+        <h1 class="auth-title">Sign in to your account</h1>
+        <p class="auth-subtitle">Join <span>MiraAI</span> and start your clinical consultation.</p>
+      </div>
+
+      <div id="auth-alert" class="auth-alert-box"></div>
+
+      <!-- Social OAuth Buttons Matching Reference Image -->
+      <div class="social-btn-stack">
+        <button type="button" class="oauth-btn" id="btn-oauth-google">
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.04h3.88c2.27-2.09 3.66-5.17 3.66-9.14z"/>
+            <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.04c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.27v3.13C3.25 21.31 7.31 24 12 24z"/>
+            <path fill="#FBBC05" d="M5.28 14.28c-.25-.72-.38-1.49-.38-2.28s.13-1.56.38-2.28V6.59H1.27C.46 8.21 0 10.05 0 12s.46 3.79 1.27 5.41l4.01-3.13z"/>
+            <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.69 1.27 6.59l4.01 3.13c.95-2.83 3.6-4.97 6.72-4.97z"/>
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+
+        <button type="button" class="oauth-btn" id="btn-oauth-github">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#181717">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          <span>Continue with GitHub</span>
+        </button>
+      </div>
+
+      <div class="or-divider">
+        <span>OR CONTINUE WITH EMAIL</span>
+      </div>
+
+      <!-- Form with input icons matching reference image -->
+      <form id="sign-in-form">
+        <div class="input-icon-wrapper">
+          <svg class="field-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206"/></svg>
+          <input type="email" id="signin-email" class="icon-input" placeholder="Email ID *" required autofocus />
+        </div>
+
+        <div class="input-icon-wrapper">
+          <svg class="field-icon" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <input type="password" id="signin-password" class="icon-input" placeholder="Password *" required />
+        </div>
+
+        <button type="submit" id="btn-submit-signin" class="btn-submit-orange">
+          <span>Sign In</span>
+          <span>&rarr;</span>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account? <a href="/sign-up">Sign Up</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectUrl = urlParams.get('redirect_url') || '/';
+    const alertBox = document.getElementById('auth-alert');
+
+    if (urlParams.get('error') === 'unauthorized') {
+      alertBox.className = 'auth-alert-box auth-alert-error';
+      alertBox.style.display = 'block';
+      alertBox.innerText = 'Admin pages are restricted. Please sign in with an authorized administrator account.';
+    } else if (urlParams.get('signout') === 'true') {
+      alertBox.className = 'auth-alert-box auth-alert-info';
+      alertBox.style.display = 'block';
+      alertBox.innerText = 'You have been signed out successfully.';
+    }
+
+    let clerk = null;
+    let clerkInitPromise = null;
+
+    async function initializeClerk() {
+      if (clerkInitPromise) return clerkInitPromise;
+      clerkInitPromise = (async () => {
+        try {
+          const cfg = await fetch('/api/auth/config').then(r => r.json());
+          if (!cfg.publishableKey) {
+            console.warn('[Clerk] No publishable key returned from /api/auth/config');
+            return null;
+          }
+
+          window.__clerk_publishable_key = cfg.publishableKey;
+
+          let frontendApi = '';
+          try {
+            const b64 = cfg.publishableKey.split('_')[2];
+            if (b64) {
+              frontendApi = window.atob(b64).replace(/\$$/, '').trim();
+            }
+          } catch {}
+
+          const scriptSrc = frontendApi
+            ? `https://${frontendApi}/npm/@clerk/clerk-js@latest/dist/clerk.browser.js`
+            : 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+
+          if (!window.Clerk) {
+            await new Promise((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = scriptSrc;
+              script.async = true;
+              script.crossOrigin = 'anonymous';
+              script.setAttribute('data-clerk-publishable-key', cfg.publishableKey);
+              script.onload = () => resolve();
+              script.onerror = () => {
+                console.warn('[Clerk] Primary host script error, loading fallback bundle');
+                const fallbackScript = document.createElement('script');
+                fallbackScript.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+                fallbackScript.async = true;
+                fallbackScript.crossOrigin = 'anonymous';
+                fallbackScript.setAttribute('data-clerk-publishable-key', cfg.publishableKey);
+                fallbackScript.onload = () => resolve();
+                fallbackScript.onerror = (err) => reject(err);
+                document.head.appendChild(fallbackScript);
+              };
+              document.head.appendChild(script);
+            });
+          }
+
+          if (window.Clerk) {
+            await window.Clerk.load();
+            clerk = window.Clerk;
+            console.log('[Clerk] Real Clerk client initialized successfully');
+
+            if (urlParams.get('signout') === 'true') {
+              if (clerk.user && typeof clerk.signOut === 'function') {
+                try {
+                  await clerk.signOut();
+                  console.log('[Clerk] Signed out active Clerk session');
+                } catch (soErr) {
+                  console.warn('[Clerk] Sign out note:', soErr);
+                }
+              }
+              localStorage.removeItem('mira_user_email');
+              localStorage.removeItem('mira_user_role');
+              localStorage.removeItem('mira_user_name');
+              document.cookie = 'mira_user_email=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
+              return clerk;
+            }
+
+            if (clerk.user) {
+              const email = clerk.user.primaryEmailAddress?.emailAddress || (clerk.user.emailAddresses && clerk.user.emailAddresses[0]?.emailAddress) || '';
+              const name = clerk.user.fullName || (clerk.user.firstName ? (clerk.user.firstName + ' ' + (clerk.user.lastName || '')) : email.split('@')[0]);
+              const token = await clerk.session?.getToken();
+              await authenticateUser(email, name, token);
+            }
+            return clerk;
+          }
+        } catch (e) {
+          console.warn('[Clerk] Client load error:', e);
+        }
+        return null;
+      })();
+      return clerkInitPromise;
+    }
+
+    window.addEventListener('load', initializeClerk);
+
+    async function handleOAuth(strategy) {
+      const btnGoogle = document.getElementById('btn-oauth-google');
+      const btnGithub = document.getElementById('btn-oauth-github');
+      if (btnGoogle) btnGoogle.disabled = true;
+      if (btnGithub) btnGithub.disabled = true;
+
+      alertBox.className = 'auth-alert-box auth-alert-info';
+      alertBox.style.display = 'block';
+      alertBox.innerText = 'Redirecting to Clerk secure authentication...';
+
+      const instance = clerk || (await initializeClerk());
+
+      if (instance && instance.loaded) {
+        try {
+          const redirectUrl = window.location.origin + '/sso-callback';
+          const redirectUrlComplete = window.location.origin + '/sso-callback';
+
+          // Clerk v4 / v5 authenticateWithRedirect is on client.signIn, client.signUp, or clerk
+          const signIn = instance.client?.signIn;
+          const signUp = instance.client?.signUp;
+
+          if (signIn && typeof signIn.authenticateWithRedirect === 'function') {
+            await signIn.authenticateWithRedirect({
+              strategy,
+              redirectUrl,
+              redirectUrlComplete,
+            });
+            return;
+          } else if (signUp && typeof signUp.authenticateWithRedirect === 'function') {
+            await signUp.authenticateWithRedirect({
+              strategy,
+              redirectUrl,
+              redirectUrlComplete,
+            });
+            return;
+          } else if (typeof instance.authenticateWithRedirect === 'function') {
+            await instance.authenticateWithRedirect({
+              strategy,
+              redirectUrl,
+              redirectUrlComplete,
+            });
+            return;
+          }
+        } catch (e) {
+          console.warn('[Clerk] OAuth redirect notice, checking alternative:', e);
+          try {
+            const signUp = instance.client?.signUp;
+            if (signUp && typeof signUp.authenticateWithRedirect === 'function') {
+              await signUp.authenticateWithRedirect({
+                strategy,
+                redirectUrl: window.location.origin + '/sso-callback',
+                redirectUrlComplete: window.location.origin + '/sso-callback',
+              });
+              return;
+            }
+          } catch (signUpErr) {
+            console.error('[Clerk] OAuth redirect alternative failed:', signUpErr);
+          }
+
+          alertBox.className = 'auth-alert-box auth-alert-error';
+          alertBox.style.display = 'block';
+          alertBox.innerText = 'Clerk OAuth notice: ' + (e.errors?.[0]?.message || e.message || 'Please check Clerk dashboard settings.');
+          if (btnGoogle) btnGoogle.disabled = false;
+          if (btnGithub) btnGithub.disabled = false;
+          return;
+        }
+      }
+
+      alertBox.className = 'auth-alert-box auth-alert-error';
+      alertBox.style.display = 'block';
+      alertBox.innerText = 'Clerk failed to load. Please verify your internet connection or Clerk keys.';
+      if (btnGoogle) btnGoogle.disabled = false;
+      if (btnGithub) btnGithub.disabled = false;
+    }
+
+    // Google OAuth Handler
+    document.getElementById('btn-oauth-google')?.addEventListener('click', () => handleOAuth('oauth_google'));
+
+    // GitHub OAuth Handler
+    document.getElementById('btn-oauth-github')?.addEventListener('click', () => handleOAuth('oauth_github'));
+
+    // Form Submission
+    document.getElementById('sign-in-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('signin-email').value.trim().toLowerCase();
+      const password = document.getElementById('signin-password').value;
+
+      if (!email) return;
+
+      const submitBtn = document.getElementById('btn-submit-signin');
+      if (submitBtn) {
+        submitBtn.innerHTML = '<span>Verifying credentials...</span>';
+        submitBtn.disabled = true;
+      }
+
+      // Authentication via Clerk
+      const instance = clerk || (await initializeClerk());
+      if (instance && instance.loaded && instance.client) {
+        try {
+          const signInAttempt = await instance.client.signIn.create({
+            identifier: email,
+            password: password,
+          });
+
+          if (signInAttempt.status === 'complete') {
+            await instance.setActive({ session: signInAttempt.createdSessionId });
+            const token = await instance.session?.getToken();
+            const fullName = instance.user?.fullName || (instance.user?.firstName ? (instance.user.firstName + ' ' + (instance.user.lastName || '')) : '');
+            await authenticateUser(token);
+            return;
+          } else if (signInAttempt.status === 'needs_second_factor') {
+            alertBox.className = 'auth-alert-box auth-alert-info';
+            alertBox.style.display = 'block';
+            alertBox.innerText = 'Two-factor authentication required for this Clerk account.';
+            if (submitBtn) {
+              submitBtn.innerHTML = '<span>Sign In</span> <span>&rarr;</span>';
+              submitBtn.disabled = false;
+            }
+            return;
+          }
+        } catch (clerkErr) {
+          console.warn('[Clerk] Password auth notice:', clerkErr);
+          const msg = clerkErr.errors?.[0]?.longMessage || clerkErr.errors?.[0]?.message || 'Invalid email or password.';
+          alertBox.className = 'auth-alert-box auth-alert-error';
+          alertBox.style.display = 'block';
+          alertBox.innerText = msg;
+          if (submitBtn) {
+            submitBtn.innerHTML = '<span>Sign In</span> <span>&rarr;</span>';
+            submitBtn.disabled = false;
+          }
+          return;
+        }
+      }
+
+      alertBox.className = 'auth-alert-box auth-alert-error';
+      alertBox.style.display = 'block';
+      alertBox.innerText = 'Authentication service is unavailable. Please verify connection.';
+      if (submitBtn) {
+        submitBtn.innerHTML = '<span>Sign In</span> <span>&rarr;</span>';
+        submitBtn.disabled = false;
+      }
+    });
+
+    async function authenticateUser(token) {
+      const submitBtn = document.getElementById('btn-submit-signin');
+      if (submitBtn) {
+        submitBtn.innerHTML = '<span>Authenticating...</span>';
+        submitBtn.disabled = true;
+      }
+
+      try {
+        const res = await fetch('/api/auth/session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ token }),
+        });
+        const data = await res.json();
+
+        if (data.success && data.user) {
+          if (window.soundEffects) {
+            window.soundEffects.playConsentTone();
+          }
+
+          localStorage.setItem('mira_user_email', data.user.email);
+          localStorage.setItem('mira_user_role', data.user.role);
+          localStorage.setItem('mira_user_name', data.user.fullName || data.user.email.split('@')[0]);
+
+          if (data.user.isAdmin) {
+            alertBox.className = 'auth-alert-box auth-alert-info';
+            alertBox.style.display = 'block';
+            alertBox.innerText = 'Administrator access verified. Redirecting to Admin Dashboard...';
+            setTimeout(() => {
+              window.location.href = redirectUrl.startsWith('/admin') ? redirectUrl : '/admin/dashboard';
+            }, 600);
+          } else {
+            alertBox.className = 'auth-alert-box auth-alert-info';
+            alertBox.style.display = 'block';
+            alertBox.innerText = `Signed in as ${data.user.email}. Redirecting to Patient Dashboard...`;
+            setTimeout(() => {
+              window.location.href = '/user/dashboard';
+            }, 600);
+          }
+        } else {
+          alertBox.className = 'auth-alert-box auth-alert-error';
+          alertBox.style.display = 'block';
+          alertBox.innerText = data.error || 'Authentication failed.';
+          if (submitBtn) {
+            submitBtn.innerHTML = '<span>Sign In</span> <span>&rarr;</span>';
+            submitBtn.disabled = false;
+          }
+        }
+      } catch (err) {
+        alertBox.className = 'auth-alert-box auth-alert-error';
+        alertBox.style.display = 'block';
+        alertBox.innerText = 'Network error while authenticating session.';
+        if (submitBtn) {
+          submitBtn.innerHTML = '<span>Sign In</span> <span>&rarr;</span>';
+          submitBtn.disabled = false;
+        }
+      }
+    }
+  </script>
+</body>
+</html>

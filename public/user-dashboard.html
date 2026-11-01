@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Dashboard - MiraAI</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      background: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .portal-nav {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .super-admin-banner {
+      background: linear-gradient(90deg, #ff5722, #ea580c);
+      color: #ffffff;
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .super-admin-banner a {
+      background: #ffffff;
+      color: #ea580c;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .dashboard-container {
+      max-width: 1180px;
+      width: 100%;
+      margin: 32px auto;
+      padding: 0 24px;
+      flex: 1;
+      box-sizing: border-box;
+    }
+
+    .welcome-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .m-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .m-card .lbl {
+      font-size: 12px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .m-card .val {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .m-card .sub {
+      font-size: 12px;
+      color: #10b981;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .panel-box {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .panel-box h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 16px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .apt-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .apt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .apt-code {
+      background: #fff7ed;
+      color: #ff5722;
+      border: 1px solid rgba(255, 87, 34, 0.3);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 12px;
+      font-family: monospace;
+    }
+
+    .apt-status {
+      background: #ecfdf5;
+      color: #059669;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 9999px;
+    }
+
+    .session-item {
+      border-bottom: 1px solid #f1f5f9;
+      padding: 14px 0;
+    }
+
+    .session-item:last-child {
+      border-bottom: none;
+    }
+
+    .cta-banner {
+      background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+      border: 1px solid #fed7aa;
+      border-radius: 16px;
+      padding: 28px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Detection Strip -->
+  <div id="admin-banner-strip" class="super-admin-banner hidden">
+    <span>Administrator Account Verified</span>
+    <a href="/admin/dashboard">Switch to Hospital Admin Panel &rarr;</a>
+  </div>
+
+  <!-- Top Navigation Bar -->
+  <header class="portal-nav">
+    <a href="/" class="brand-container" style="text-decoration:none;">
+      <div class="brand-logo-flame"></div>
+      <span class="brand-name">MiraAI</span>
+      <span style="font-size:12px; font-weight:700; background:#f1f5f9; color:#475569; padding:3px 8px; border-radius:6px; margin-left:8px;">Patient Portal</span>
+    </a>
+
+    <div style="display:flex; align-items:center; gap:16px;">
+      <a href="/consent" class="btn-primary" style="text-decoration:none; padding:8px 18px; font-size:13px;">
+        Start New Consultation &rarr;
+      </a>
+
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div id="user-avatar-circle" style="width:34px; height:34px; border-radius:50%; background:#ff5722; color:#ffffff; font-weight:800; display:flex; align-items:center; justify-content:center; font-size:14px;">
+          U
+        </div>
+        <div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div id="portal-user-name" style="font-size:13px; font-weight:700; color:#0f172a; line-height:1.2;">Patient User</div>
+            <span id="clerk-verified-badge" class="hidden" style="font-size:10px; font-weight:700; background:#ecfdf5; color:#059669; border:1px solid #a7f3d0; padding:2px 6px; border-radius:9999px;">
+              &check; Verified by Clerk
+            </span>
+          </div>
+          <div id="portal-user-email" style="font-size:11px; color:#64748b;">loading...</div>
+        </div>
+      </div>
+
+      <button id="btn-portal-signout" class="btn-outline" style="padding:6px 14px; font-size:12px; cursor:pointer;">
+        Sign Out
+      </button>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    <div id="portal-error-banner" class="hidden" style="background:#fee2e2; border:1px solid #f87171; color:#b91c1c; padding:12px 16px; border-radius:10px; margin-bottom:20px; font-size:13px; font-weight:600;"></div>
+
+    <!-- Welcome Header -->
+    <div class="welcome-header">
+      <div>
+        <h1 style="font-size:26px; font-weight:800; color:#0f172a; margin:0 0 6px 0;">
+          Welcome back, <span id="header-user-display" style="color:#ff5722;">Patient</span>!
+        </h1>
+        <p style="font-size:14px; color:#64748b; margin:0;">
+          Your clinical voice consultation records, AI symptom summaries, and attending doctor appointments.
+        </p>
+      </div>
+
+      <div style="text-align:right;">
+        <span style="display:inline-block; font-size:12px; font-weight:700; color:#059669; background:#ecfdf5; border:1px solid #a7f3d0; padding:6px 14px; border-radius:9999px;">
+          &bull; HIPAA Protected Cloud Storage
+        </span>
+      </div>
+    </div>
+
+    <!-- 4 KPI Metrics Cards -->
+    <div class="metrics-row">
+      <div class="m-card">
+        <div class="lbl">Active Bookings</div>
+        <div class="val" id="metric-appointments">0</div>
+        <div class="sub" id="metric-appointments-sub">&check; Slot Confirmed</div>
+      </div>
+
+      <div class="m-card">
+        <div class="lbl">Voice Consultations</div>
+        <div class="val" id="metric-consultations">0</div>
+        <div class="sub" style="color:#64748b;">Completed with MiraAI</div>
+      </div>
+
+      <div class="m-card">
+        <div class="lbl">Triage Status</div>
+        <div class="val" id="metric-triage" style="font-size:20px; color:#ff5722;">--</div>
+        <div class="sub" style="color:#64748b;">Clinical Assessment</div>
+      </div>
+
+      <div class="m-card">
+        <div class="lbl">Attending Doctor</div>
+        <div class="val" id="metric-doctor" style="font-size:16px;">--</div>
+        <div class="sub" id="metric-dept" style="color:#64748b;">Hospital Department</div>
+      </div>
+    </div>
+
+    <!-- Two Columns Section -->
+    <div class="section-grid">
+      <!-- Left: My Appointments -->
+      <div class="panel-box">
+        <h3>
+          <span>My Upcoming Appointments</span>
+          <span style="font-size:12px; font-weight:600; color:#64748b;" id="apt-count-text">0 Confirmed</span>
+        </h3>
+
+        <div id="appointments-list-container">
+          <div style="text-align:center; padding:32px; color:#94a3b8; font-size:14px;">
+            Loading appointments from Supabase...
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Recent Consultations & AI Summaries -->
+      <div class="panel-box">
+        <h3>
+          <span>Consultation Summaries</span>
+          <a href="/consent" style="font-size:12px; font-weight:700; color:#ff5722; text-decoration:none;">+ New Intake</a>
+        </h3>
+
+        <div id="sessions-list-container">
+          <div style="text-align:center; padding:32px; color:#94a3b8; font-size:14px;">
+            Loading consultations from Supabase...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Consultation Box -->
+    <div class="cta-banner">
+      <div>
+        <h3 style="font-size:18px; font-weight:800; color:#9a3412; margin:0 0 6px 0;">Need immediate clinical advice?</h3>
+        <p style="font-size:13px; color:#7c2d12; margin:0; max-width:600px;">
+          Speak with MiraAI right now in code-mixed Hinglish. Voice triage is available 24/7 with zero waiting time.
+        </p>
+      </div>
+
+      <a href="/consent" class="btn-primary" style="text-decoration:none; padding:12px 24px; font-size:14px; white-space:nowrap;">
+        Start Voice Consultation &rarr;
+      </a>
+    </div>
+  </main>
+
+  <script>
+    async function loadUserProfile() {
+      const errBanner = document.getElementById('portal-error-banner');
+      try {
+        const res = await fetch('/api/user/profile');
+        if (res.status === 401) {
+          window.location.href = '/sign-in?redirect_url=/user/dashboard';
+          return;
+        }
+        if (res.status === 503) {
+          errBanner.classList.remove('hidden');
+          errBanner.innerText = 'Database service unavailable. Cloud connection to Supabase is offline.';
+          return;
+        }
+
+        const data = await res.json();
+        const user = data.user;
+
+        if (user) {
+          document.getElementById('portal-user-name').innerText = user.fullName || user.email.split('@')[0];
+          document.getElementById('portal-user-email').innerText = user.email;
+          document.getElementById('header-user-display').innerText = user.fullName || user.email.split('@')[0];
+          document.getElementById('user-avatar-circle').innerText = (user.fullName || user.email)[0].toUpperCase();
+
+          if (user.emailVerified) {
+            document.getElementById('clerk-verified-badge')?.classList.remove('hidden');
+          }
+
+          if (user.isAdmin) {
+            document.getElementById('admin-banner-strip').classList.remove('hidden');
+          }
+        }
+
+        const appointments = data.appointments || [];
+        const sessions = data.sessions || [];
+
+        // Update KPIs
+        document.getElementById('metric-appointments').innerText = appointments.length;
+        document.getElementById('metric-consultations').innerText = sessions.length;
+        document.getElementById('apt-count-text').innerText = `${appointments.length} Confirmed`;
+
+        if (sessions.length > 0 && sessions[0].summary?.urgencyLevel) {
+          document.getElementById('metric-triage').innerText = sessions[0].summary.urgencyLevel;
+        } else {
+          document.getElementById('metric-triage').innerText = 'ROUTINE';
+        }
+
+        if (appointments.length > 0) {
+          document.getElementById('metric-doctor').innerText = appointments[0].doctorName || 'Assigned Doctor';
+          document.getElementById('metric-dept').innerText = appointments[0].specialization || 'Clinical Dept';
+        } else {
+          document.getElementById('metric-doctor').innerText = 'None';
+          document.getElementById('metric-dept').innerText = 'No pending appointments';
+        }
+
+        // Render appointments list
+        const aptContainer = document.getElementById('appointments-list-container');
+        if (appointments.length === 0) {
+          aptContainer.innerHTML = `
+            <div style="text-align:center; padding:36px; color:#94a3b8; font-size:13px; border:1px dashed #cbd5e1; border-radius:12px;">
+              No upcoming appointments found.
+              <div style="margin-top:8px;">
+                <a href="/consent" style="color:#ff5722; font-weight:700; text-decoration:none;">Book via Voice Consultation &rarr;</a>
+              </div>
+            </div>`;
+        } else {
+          aptContainer.innerHTML = appointments.map(apt => `
+            <div class="apt-item">
+              <div class="apt-header">
+                <span class="apt-code">${apt.bookingCode || 'APT'}</span>
+                <span class="apt-status">${(apt.status || 'CONFIRMED').toUpperCase()}</span>
+              </div>
+              <div style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:4px;">
+                ${apt.doctorName || 'Doctor'} &bull; ${apt.specialization || 'Department'}
+              </div>
+              <div style="font-size:13px; color:#64748b; margin-bottom:8px;">
+                ${apt.startAt ? new Date(apt.startAt).toLocaleString() : ''}
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:10px; border-top:1px solid #e2e8f0;">
+                <span style="font-size:12px; color:#64748b;">Patient: ${apt.patientName || user.fullName}</span>
+                <a href="/interview" class="btn-primary" style="text-decoration:none; padding:6px 14px; font-size:12px;">
+                  Enter Live Room &rarr;
+                </a>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // Render sessions list
+        const sessContainer = document.getElementById('sessions-list-container');
+        if (sessions.length === 0) {
+          sessContainer.innerHTML = `
+            <div style="text-align:center; padding:36px; color:#94a3b8; font-size:13px; border:1px dashed #cbd5e1; border-radius:12px;">
+              No clinical consultations recorded yet.
+              <div style="margin-top:8px;">
+                <a href="/consent" style="color:#ff5722; font-weight:700; text-decoration:none;">Start your first intake &rarr;</a>
+              </div>
+            </div>`;
+        } else {
+          sessContainer.innerHTML = sessions.map(s => `
+            <div class="session-item">
+              <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                <strong style="font-size:14px; color:#0f172a;">${s.summary?.chiefComplaint || s.chiefComplaint || 'Clinical Consultation'}</strong>
+                <span style="font-size:11px; color:#64748b;">${s.createdAt ? new Date(s.createdAt).toLocaleDateString() : ''}</span>
+              </div>
+              <p style="font-size:12px; color:#475569; margin:4px 0 8px 0; line-height:1.5;">
+                ${s.summary?.fullClinicalNote || (s.transcript?.length ? s.transcript[0]?.text : 'Consultation transcript recorded.')}
+              </p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:11px; font-weight:700; color:#ea580c; background:#fff7ed; padding:3px 8px; border-radius:6px;">
+                  Urgency: ${s.summary?.urgencyLevel || s.urgency || 'ROUTINE'}
+                </span>
+                <span style="font-size:12px; font-weight:700; color:${(s.status === 'USER_ENDED' || s.summary?.userEnded || s.userEnded) ? '#d97706' : '#10b981'};">
+                  Status: ${(s.status === 'USER_ENDED' || s.summary?.userEnded || s.userEnded) ? 'User Ended Interview' : (s.status || 'COMPLETED')}
+                </span>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (e) {
+        console.warn('Profile fetch warning:', e);
+        errBanner.classList.remove('hidden');
+        errBanner.innerText = 'Unable to reach backend services. Please check connection.';
+      }
+    }
+
+    document.getElementById('btn-portal-signout')?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        await fetch('/api/auth/sign-out', { method: 'POST' });
+      } catch (err) {
+        console.warn('Sign-out API warning:', err);
+      }
+
+      if (window.Clerk && typeof window.Clerk.signOut === 'function') {
+        try {
+          await window.Clerk.signOut();
+        } catch (err) {
+          console.warn('Clerk signOut warning:', err);
+        }
+      }
+
+      localStorage.removeItem('mira_user_email');
+      localStorage.removeItem('mira_user_role');
+      localStorage.removeItem('mira_user_name');
+      document.cookie = 'mira_user_email=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      window.location.href = '/sign-in?signout=true';
+    });
+
+    window.addEventListener('DOMContentLoaded', loadUserProfile);
+  </script>
+</body>
+</html>
+

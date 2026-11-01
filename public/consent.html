@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinical Consultation Consent - MiraAI</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/sound_effects.js"></script>
+  <script src="/nav_auth.js" defer></script>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <a href="/" class="brand-container" style="text-decoration:none;">
+      <div class="brand-logo-flame"></div>
+      <span class="brand-name">MiraAI</span>
+    </a>
+
+    <div class="nav-actions" id="top-nav-actions">
+      <!-- Injected dynamically by nav_auth.js -->
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+    <!-- Wizard Progress Bar -->
+    <div class="wizard-progress">
+      <div class="step-item active">
+        <div class="step-circle">1</div>
+        <span>Consent & Policy</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <span>Hardware Check</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <span>Internet Speed</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">4</div>
+        <span>Issue Snapshot</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">5</div>
+        <span>Live Consultation</span>
+      </div>
+    </div>
+
+    <!-- Consent Card Box (Matching Image 2) -->
+    <section>
+      <div class="consent-card-outer">
+        <div class="shield-icon-badge">
+          <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+
+        <h2 class="consent-title">Clinical Consultation & Recording Consent</h2>
+        <p class="consent-subtitle">MiraAI Autonomous Health System &mdash; Hospital Intake & Triage 2026</p>
+
+        <div class="consent-cards-grid">
+          <div class="c-card">
+            <h4>Audio & Webcam Recording</h4>
+            <p>Continuous audio and camera feed are captured during your consultation to verify symptoms, transcribe medical intake, and attach visible lesion images.</p>
+          </div>
+          <div class="c-card">
+            <h4>Secure Storage & HIPAA Privacy</h4>
+            <p>All recorded audio chunks, transcripts, and AI clinical summaries are retained in encrypted hospital database storage for 180 days for doctor review.</p>
+          </div>
+          <div class="c-card">
+            <h4>Authorized Medical Review</h4>
+            <p>Summaries are accessible only by authorized hospital doctors (Cardiology, Orthopedic, Dermatology, Pediatrics) for appointment preparation.</p>
+          </div>
+          <div class="c-card">
+            <h4>Symptom & Cadence Signals</h4>
+            <p>Speech latency, respiration cadence, and visible disease spots are logged as clinical triage indicators. Patients can pause or end anytime.</p>
+          </div>
+        </div>
+
+        <div class="consent-ack-box">
+          <input type="checkbox" id="consent-checkbox" checked style="accent-color: var(--primary); width:18px; height:18px; cursor:pointer;">
+          <label for="consent-checkbox" style="cursor:pointer;">
+            I acknowledge that I give explicit consent for audio recording, camera monitoring, and AI clinical evaluation for this consultation appointment.
+          </label>
+        </div>
+
+        <div style="display:flex; justify-content:center; gap:16px;">
+          <a href="/" class="btn-outline" style="text-decoration:none;">Cancel & Return</a>
+          <button class="btn-primary" id="btn-consent-proceed">Accept & Proceed to Device Check &rarr;</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById('btn-consent-proceed')?.addEventListener('click', () => {
+      const cb = document.getElementById('consent-checkbox');
+      if (!cb.checked) {
+        alert('Please accept the consent terms to proceed.');
+        return;
+      }
+      if (window.soundEffects) {
+        window.soundEffects.playConsentTone();
+      }
+      setTimeout(() => {
+        window.location.href = '/camera';
+      }, 250);
+    });
+  </script>
+</body>
+</html>
+

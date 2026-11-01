@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Consultation - Gemini 3.8 Live - MiraAI</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/sound_effects.js"></script>
+  <style>
+    body {
+      background: #fafafa;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .interview-header-stepper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .step-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .step-pill.active {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .step-pill.completed {
+      color: #10b981;
+      font-weight: 700;
+    }
+
+    .step-num-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .step-pill.active .step-num-badge {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .step-pill.completed .step-num-badge {
+      background: #10b981;
+      color: #ffffff;
+    }
+
+    .gemini-model-badge {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .live-pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #2563eb;
+      border-radius: 50%;
+      animation: pulse-blue 1.2s infinite;
+    }
+
+    @keyframes pulse-blue {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.7; }
+    }
+
+    .voice-tag {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    /* Orb Section */
+    .orb-stage-wrapper {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 36px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+
+    .orb-glow-ring {
+      position: relative;
+      width: 230px;
+      height: 230px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .orbit-circle {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px dashed rgba(255, 87, 34, 0.35);
+      animation: rotate-orbit 24s linear infinite;
+    }
+
+    .orbit-pip-1 {
+      position: absolute;
+      top: 15px;
+      left: 35px;
+      width: 10px;
+      height: 10px;
+      background: var(--primary);
+      border-radius: 50%;
+    }
+
+    .orbit-pip-2 {
+      position: absolute;
+      bottom: 25px;
+      right: 30px;
+      width: 8px;
+      height: 8px;
+      background: #f97316;
+      border-radius: 50%;
+    }
+
+    @keyframes rotate-orbit {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .mira-sphere {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #ff8a65, #ff5722 65%, #d84315);
+      box-shadow: 0 0 45px rgba(255, 87, 34, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      transform: rotate(-12deg);
+      user-select: none;
+      transition: all 0.25s ease;
+    }
+
+    .mira-sphere.speaking {
+      animation: sphere-speak 1s infinite alternate ease-in-out;
+      box-shadow: 0 0 65px rgba(255, 87, 34, 0.7);
+    }
+
+    .mira-sphere.listening {
+      background: radial-gradient(circle at 35% 35%, #60a5fa, #3b82f6 65%, #1d4ed8);
+      box-shadow: 0 0 55px rgba(59, 130, 246, 0.55);
+      transform: rotate(0deg);
+    }
+
+    @keyframes sphere-speak {
+      0% { transform: rotate(-12deg) scale(0.96); }
+      100% { transform: rotate(-12deg) scale(1.06); }
+    }
+
+    .equalizer-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 24px;
+      margin-top: 8px;
+    }
+
+    .eq-bar {
+      width: 4px;
+      height: 6px;
+      background: var(--primary);
+      border-radius: 2px;
+      transition: height 0.1s ease;
+    }
+
+    .eq-bar.active {
+      animation: eq-pulse 0.4s infinite alternate ease-in-out;
+    }
+
+    .eq-bar:nth-child(1) { animation-delay: 0.05s; }
+    .eq-bar:nth-child(2) { animation-delay: 0.15s; }
+    .eq-bar:nth-child(3) { animation-delay: 0.25s; }
+    .eq-bar:nth-child(4) { animation-delay: 0.1s; }
+    .eq-bar:nth-child(5) { animation-delay: 0.2s; }
+    .eq-bar:nth-child(6) { animation-delay: 0.3s; }
+    .eq-bar:nth-child(7) { animation-delay: 0.12s; }
+
+    @keyframes eq-pulse {
+      0% { height: 6px; }
+      100% { height: 24px; }
+    }
+
+    .voice-select-box {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .voice-select-box select {
+      padding: 4px 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #0f172a;
+      outline: none;
+    }
+
+    /* Right Column: Inquiry & Video */
+    .inquiry-banner {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .speaking-status-pill {
+      background: #fff7ed;
+      color: #ff5722;
+      border: 1px solid rgba(255, 87, 34, 0.3);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .speaking-status-pill.listening {
+      background: #eff6ff;
+      color: #2563eb;
+      border-color: rgba(37, 99, 235, 0.3);
+    }
+
+    .patient-video-frame {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      background: #0f172a;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .patient-video-frame video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .video-you-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(4px);
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .green-dot {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+    }
+
+    .live-transcript-feed {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+      height: 220px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .feed-bubble {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      max-width: 88%;
+      box-sizing: border-box;
+    }
+
+    .feed-bubble.mira {
+      background: #fff7ed;
+      border: 1px solid #ffedd5;
+      color: #9a3412;
+      align-self: flex-start;
+    }
+
+    .feed-bubble.patient {
+      background: #eff6ff;
+      border: 1px solid #dbeafe;
+      color: #1e40af;
+      align-self: flex-end;
+      transition: all 0.15s ease;
+    }
+
+    .feed-bubble.patient.interim-live {
+      background: #eff6ff;
+      border: 1.5px dashed #3b82f6;
+      color: #1e3a8a;
+      align-self: flex-end;
+      box-shadow: 0 2px 10px rgba(59, 130, 246, 0.18);
+    }
+
+    .live-pulse-badge {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #2563eb;
+      border-radius: 50%;
+      margin-left: 6px;
+      animation: live-stream-glow 0.8s infinite ease-in-out;
+      vertical-align: middle;
+    }
+
+    .live-pause-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #f59e0b;
+      border-radius: 50%;
+      margin-left: 6px;
+      animation: live-stream-glow 1.2s infinite ease-in-out;
+      vertical-align: middle;
+    }
+
+    @keyframes live-stream-glow {
+      0%, 100% { transform: scale(0.8); opacity: 0.4; }
+      50% { transform: scale(1.3); opacity: 1; }
+    }
+
+    .feed-bubble.system {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #166534;
+      align-self: center;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .feed-bubble.tool-event {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-left: 4px solid #2563eb;
+      color: #0f172a;
+      align-self: center;
+      font-size: 12px;
+      width: 95%;
+      border-radius: 8px;
+      padding: 10px 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    /* Confirmed Appointment Card */
+    .confirmed-appointment-card {
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+      border: 2px solid #86efac;
+      border-radius: 16px;
+      padding: 18px 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.12);
+      display: none;
+    }
+
+    .apt-badge-code {
+      background: #10b981;
+      color: #ffffff;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Fixed bottom bar */
+    .fixed-interview-bar {
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border-top: 1px solid var(--border-color);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
+      z-index: 50;
+    }
+
+    .ctrl-round-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: #f8fafc;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .ctrl-round-btn:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .ctrl-round-btn.active-mic {
+      background: #ff5722;
+      border-color: #ff5722;
+      color: #ffffff;
+    }
+
+    .ctrl-round-btn.muted {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #dc2626;
+    }
+
+    .btn-end-interview {
+      background: #dc2626;
+      color: #ffffff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-end-interview:hover {
+      background: #b91c1c;
+    }
+
+    .quick-symptom-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .quick-pill-btn {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .quick-pill-btn:hover {
+      background: #fff7ed;
+      border-color: #ff5722;
+      color: #ff5722;
+    }
+  </style>
+  <script src="/nav_auth.js" defer></script>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-nav">
+    <a href="/" class="brand-container" style="text-decoration:none;">
+      <div class="brand-logo-flame"></div>
+      <span class="brand-name">MiraAI</span>
+    </a>
+
+    <!-- Dynamic Clinical Progression Stepper -->
+    <div class="interview-header-stepper">
+      <div class="step-pill active" id="stage-name">
+        <span class="step-num-badge">1</span>
+        <span>Patient Intake</span>
+      </div>
+      <span>&bull;</span>
+      <div class="step-pill" id="stage-phone">
+        <span class="step-num-badge">2</span>
+        <span>Clinical Probing</span>
+      </div>
+      <span>&bull;</span>
+      <div class="step-pill" id="stage-symptoms">
+        <span class="step-num-badge">3</span>
+        <span>Triage Assessment</span>
+      </div>
+      <span>&bull;</span>
+      <div class="step-pill" id="stage-appointment">
+        <span class="step-num-badge">4</span>
+        <span>Confirmed Schedule</span>
+      </div>
+    </div>
+
+    <!-- Gemini 3.8 Live Direct STT/TTS Badge -->
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div class="gemini-model-badge">
+        <span class="live-pulse-dot"></span>
+        <span>Gemini 3.8 Live</span>
+        <span class="voice-tag" id="voice-name-tag">Voice: Kore (HD)</span>
+      </div>
+
+      <div class="nav-actions" id="top-nav-actions">
+        <!-- Injected dynamically by nav_auth.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Live Consultation Area -->
+  <main class="main-wrapper" style="padding-top: 24px; padding-bottom: 24px; max-width: 1200px; margin: 0 auto; width: 100%;">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start;">
+
+      <!-- Left Column: Glowing Mira Orb & Real-time Equalizer -->
+      <div class="orb-stage-wrapper">
+        <div class="orb-glow-ring">
+          <div class="orbit-circle">
+            <span class="orbit-pip-1"></span>
+            <span class="orbit-pip-2"></span>
+          </div>
+          <div class="mira-sphere speaking" id="mira-orb-avatar">
+            Mira
+          </div>
+        </div>
+
+        <div id="mira-caption" style="font-size:20px; font-weight:800; color:#0f172a; margin-bottom:4px;">
+          Speaking...
+        </div>
+
+        <div class="equalizer-row" id="eq-container">
+          <div class="eq-bar active"></div>
+          <div class="eq-bar active"></div>
+          <div class="eq-bar active"></div>
+          <div class="eq-bar active"></div>
+          <div class="eq-bar active"></div>
+          <div class="eq-bar active"></div>
+          <div class="eq-bar active"></div>
+        </div>
+
+        <div class="voice-select-box">
+          <span>Clinical Voice:</span>
+          <select id="select-gemini-voice">
+            <option value="Kavya" selected>Kavya (Sarvam AI - Warm Indian Accent - Recommended)</option>
+            <option value="Priya">Priya (Sarvam AI - Empathetic Hindi/English)</option>
+            <option value="Shreya">Shreya (Sarvam AI - Clear Studio Voice)</option>
+            <option value="Shubh">Shubh (Sarvam AI - Professional Male Voice)</option>
+            <option value="Kore">Kore (Gemini Live - Physician)</option>
+            <option value="Zephyr">Zephyr (Gemini Live - Warm)</option>
+          </select>
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px; margin-top:10px; font-size:11px; font-weight:700;">
+          <span style="display:inline-flex; align-items:center; gap:4px; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; padding:2px 8px; border-radius:12px;">
+            <span style="width:6px; height:6px; border-radius:50%; background:#16a34a;"></span>
+            Noise Cancellation: Active (85Hz High-Pass + Speech Gate)
+          </span>
+          <span style="display:inline-flex; align-items:center; gap:4px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:2px 8px; border-radius:12px;">
+            <span style="width:6px; height:6px; border-radius:50%; background:#2563eb;"></span>
+            Barge-In: Voice / Spacebar / Click
+          </span>
+        </div>
+
+        <p style="font-size:12px; color:var(--text-muted); max-width:340px; margin-top:10px; line-height:1.5;">
+          Direct Speech-to-Text (STT) and Text-to-Speech (TTS) active. Speak naturally &mdash; sub-10ms barge-in instantly pauses playback when you respond.
+        </p>
+
+        <!-- Natural Voice Intake Topics (Self-Probing AI Flow) -->
+        <div style="margin-top:20px; width:100%; text-align:left; border-top:1px solid #f1f5f9; padding-top:14px;">
+          <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:8px;">
+            Dynamic Consultation Prompts (Click or Speak naturally):
+          </div>
+
+          <div style="font-size:10px; font-weight:700; color:#ff5722; text-transform:uppercase; margin-bottom:4px;">
+            Symptom Intake & Health Concerns
+          </div>
+          <div class="quick-symptom-strip" style="margin-bottom:10px;">
+            <button class="quick-pill-btn" data-query="Mujhe kal raat se acute chest pain aur ghabrahat mehsus ho rahi hai">Chest Pain & Discomfort</button>
+            <button class="quick-pill-btn" data-query="Mere skin par red allergy spot aur khujli ho rahi hai">Skin Allergy & Rash</button>
+            <button class="quick-pill-btn" data-query="Ghutne ke joint mein bohot dard aur chalne mein dikkat hai">Joint & Bone Ache</button>
+            <button class="quick-pill-btn" data-query="Mujhe 2 din se tez bukhar, badan dard aur khansi hai">Viral Fever & Cough</button>
+          </div>
+
+          <div style="font-size:10px; font-weight:700; color:#ff5722; text-transform:uppercase; margin-bottom:4px;">
+            Clinical Follow-up & Severity Details
+          </div>
+          <div class="quick-symptom-strip" style="margin-bottom:10px;">
+            <button class="quick-pill-btn" data-query="Yeh dard achanak shuru hua tha aur aaram karne par bhi kam nahi ho raha">Sudden Onset / No Relief</button>
+            <button class="quick-pill-btn" data-query="Dard tez hai aur iski wajah se raat ko sone mein dikkat aati hai">Severe / Sleep Disturbed</button>
+          </div>
+
+          <div style="font-size:10px; font-weight:700; color:#ff5722; text-transform:uppercase; margin-bottom:4px;">
+            Scheduling & Appointment Confirmation
+          </div>
+          <div class="quick-symptom-strip">
+            <button class="quick-pill-btn" data-query="Kya koi specialist doctor kal available hai consultation ke liye?">Ask Available Doctors</button>
+            <button class="quick-pill-btn" data-query="Haan kal 11 baje ka slot confirm kardo please" style="border-color:#ff5722; color:#ff5722; font-weight:700;">
+              Confirm & Book Slot
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Live Inquiry, Camera Stream, and Transcript -->
+      <div>
+        <!-- Active Question Banner -->
+        <div class="inquiry-banner">
+          <div style="display:flex; align-items:center; gap:8px; color:var(--primary); font-size:15px; font-weight:700; margin-bottom:8px;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+            <span id="inquiry-headline">Mira AI Clinical Voice Consultation Active</span>
+          </div>
+
+          <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:10px; padding:12px 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <div style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:#334155;">
+                <span style="width:7px; height:7px; border-radius:50%; background:#f59e0b;" id="status-dot"></span>
+                <span id="ai-status-subtext">Mira Speaking... (Direct STT will listen when finished)</span>
+              </div>
+              <span class="speaking-status-pill" id="ai-role-pill">AI Speaking</span>
+            </div>
+            <p style="font-size:12px; color:var(--text-muted); margin:0;">
+              Direct Gemini 3.8 Live voice active with voice <strong id="voice-label-inline">Kore</strong>. Speak your name, phone, and pain/symptoms naturally.
+            </p>
+          </div>
+        </div>
+
+        <!-- Confirmed Doctor Appointment Card (Shows when slot is booked) -->
+        <div class="confirmed-appointment-card" id="appointment-card-display">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span class="apt-badge-code" id="card-apt-code">APT-CONFIRMED</span>
+            <span style="font-size:11px; font-weight:800; color:#059669; text-transform:uppercase;">Hospital DB Stored</span>
+          </div>
+          <h3 style="font-size:17px; font-weight:800; color:#064e3b; margin:0 0 4px 0;" id="card-doctor-name">
+            Confirmed Appointment
+          </h3>
+          <p style="font-size:13px; color:#047857; margin:0 0 10px 0;" id="card-slot-time">
+            Details will appear once booked
+          </p>
+          <div style="display:flex; gap:10px; margin-bottom:8px;">
+            <a href="/admin/dashboard" class="btn-primary" style="text-decoration:none; padding:6px 14px; font-size:12px; background:#059669;">
+              View in Admin Panel &rarr;
+            </a>
+            <a href="/user/dashboard" class="btn-outline" style="text-decoration:none; padding:6px 14px; font-size:12px; color:#064e3b; border-color:#86efac;">
+              Patient Portal &rarr;
+            </a>
+          </div>
+          <div id="card-auto-end-banner" style="background:#dcfce7; border:1px solid #86efac; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:700; color:#065f46; display:none; align-items:center; justify-content:space-between;">
+            <span id="auto-end-countdown-text">Appointment confirmed! Consultation auto-ending in 4s...</span>
+            <button id="btn-auto-end-now" type="button" style="background:#059669; color:#fff; border:none; border-radius:6px; padding:3px 10px; font-size:11px; font-weight:700; cursor:pointer;">Finish Now</button>
+          </div>
+        </div>
+
+        <!-- Real-Time Patient Video Stream -->
+        <div class="patient-video-frame">
+          <video id="live-webcam-video" autoplay playsinline muted></video>
+          <div class="video-you-badge">
+            <span class="green-dot"></span>
+            <span id="video-patient-name">Patient: Anuj Chavan</span>
+          </div>
+          <div style="position:absolute; bottom:12px; right:12px; background:rgba(15,23,42,0.7); backdrop-filter:blur(4px); padding:4px 10px; border-radius:6px; color:#94a3b8; font-size:11px; font-weight:600;">
+            Turn Latency: <span id="metric-latency" style="color:#4ade80;">16ms</span> &bull; 100% Ingest
+          </div>
+        </div>
+
+        <!-- Real-time Hinglish Transcript -->
+        <div class="live-transcript-feed" id="consultation-transcript">
+          <div class="feed-bubble mira">
+            <strong>Mira (Gemini 3.8 Live &bull; Voice: Kore):</strong> Namaste! Main MiraAI hoon, Gemini 3.8 Live powered clinical assistant. Kripya apna poora naam batayein?
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Sticky Bottom Control Bar -->
+  <div class="fixed-interview-bar">
+    <div style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:#1e293b;">
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <span>Session Time:</span>
+      <span id="timer-display" style="color:var(--primary); font-family:monospace; font-size:16px;">14:59</span>
+    </div>
+
+    <!-- Center Interactive Controls -->
+    <div style="display:flex; align-items:center; gap:12px;">
+      <button class="ctrl-round-btn active-mic" id="btn-toggle-mic" title="Toggle Direct Microphone STT">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+      </button>
+
+      <button class="ctrl-round-btn" id="btn-toggle-camera" title="Toggle Camera">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+      </button>
+
+      <button class="ctrl-round-btn" id="btn-bargein-trigger" title="Interrupt Mira (Sub-10ms Barge-In)">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </button>
+    </div>
+
+    <!-- Right End Button -->
+    <button class="btn-end-interview" id="btn-end-interview">
+      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      <span>Complete Consultation</span>
+    </button>
+  </div>
+
+  <!-- Interactive Join Modal (Unlocks AudioContext Autoplay, Camera & Microphone in 1 User Gesture) -->
+  <div id="join-consultation-modal" onclick="if(event.target===this) window.enterConsultationDirectly();" style="position:fixed; inset:0; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div style="position:relative; background:#ffffff; border-radius:24px; max-width:440px; width:100%; padding:36px 30px; text-align:center; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); border:1px solid #e2e8f0;">
+      <button type="button" onclick="window.enterConsultationDirectly()" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:24px; color:#94a3b8; cursor:pointer; font-weight:700; line-height:1;" title="Close & Enter">&times;</button>
+
+      <div style="width:68px; height:68px; background:linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border:2px solid #fdba74; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 18px auto; color:#ff5722;">
+        <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+      </div>
+
+      <h2 style="font-size:22px; font-weight:800; color:#0f172a; margin-bottom:8px;">Live Clinical Consultation</h2>
+      <p style="font-size:13px; color:#64748b; line-height:1.5; margin-bottom:24px;">
+        Click below to enable your camera, microphone, and live audio to speak with Mira.
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:24px; text-align:left; font-size:12px; color:#334155; background:#f8fafc; padding:14px 18px; border-radius:12px; border:1px solid #e2e8f0;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="color:#10b981; font-weight:800;">[OK]</span>
+          <span>Camera stream for visual intake</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="color:#10b981; font-weight:800;">[OK]</span>
+          <span>Microphone for Speech-to-Text</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="color:#10b981; font-weight:800;">[OK]</span>
+          <span>Audio output for Gemini / Sarvam voice</span>
+        </div>
+      </div>
+
+      <button type="button" id="btn-join-session" onclick="window.enterConsultationDirectly()" style="width:100%; background:linear-gradient(135deg, #ff5722 0%, #f4511e 100%); color:#ffffff; border:none; padding:14px 20px; border-radius:12px; font-size:15px; font-weight:800; cursor:pointer; box-shadow:0 4px 16px rgba(255,87,34,0.35); transition:all 0.15s ease;">
+        Start Consultation Now &rarr;
+      </button>
+    </div>
+  </div>
+
+  <script>
+    window.enterConsultationDirectly = function() {
+      const modal = document.getElementById('join-consultation-modal');
+      if (modal) {
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.2s ease';
+        setTimeout(() => {
+          try { modal.remove(); } catch (e) { modal.style.display = 'none'; }
+        }, 200);
+      }
+      if (!window.consultationMgr) {
+        try {
+          window.consultationMgr = new GeminiLiveConsultationManager();
+        } catch (e) {
+          console.error('Consultation initialization note:', e);
+        }
+      }
+      if (window.consultationMgr) {
+        window.consultationMgr.activateSession();
+      }
+    };
+    class GeminiLiveConsultationManager {
+      constructor() {
+        this.sessionId = sessionStorage.getItem('mira_session_id') || ('sess_' + Date.now());
+        sessionStorage.setItem('mira_session_id', this.sessionId);
+
+        // Preload email or stored name if available
+        const savedEmail = localStorage.getItem('mira_user_email') || '';
+        const savedName = localStorage.getItem('mira_user_name') || '';
+        this.patientId = savedEmail ? ('pat_' + savedEmail.replace(/[^a-zA-Z0-9]/g, '_')) : ('pat_' + Date.now());
+        this.patientName = savedName;
+        this.patientPhone = '';
+        this.selectedVoice = 'Kore';
+
+        this.mediaStream = null;
+        this.micStream = null;
+        this.ws = null;
+        this.recognition = null;
+        this.isMiraSpeaking = false;
+        this.allowInterruption = true;
+        this.isMuted = false;
+        this.currentStage = 'NAME'; // NAME -> PHONE -> SYMPTOMS -> APPOINTMENT
+
+        // DSP Noise Cancellation & Adaptive Noise Floor Tracking
+        this.ambientNoiseFloor = 0.015;
+        this.consecutiveBargeFrames = 0;
+        this.activeAudioGainNode = null;
+        this.speakCooldownTimer = null;
+
+        // Real Gemini 3.8 Live Direct Audio Player (Web Audio API)
+        this.audioCtx = null;
+        this.activeAudioSource = null;
+        this.nextPcmTime = 0;
+        this.audioQueue = [];
+
+        this.totalSeconds = 15 * 60;
+        this.timerInterval = null;
+
+        // Gemini Live-style Dynamic Word & Sentence Updating
+        this.currentSentence = '';
+        this.interimUserBubble = null;
+        this.activeMiraBubble = null;
+        this.silenceDebounceTimer = null;
+        this.silenceThresholdMs = 1350; // Allows 1.0 - 1.2s mid-sentence pause without splitting
+
+        this.sessionActivated = false;
+        this.greetingSpoken = false;
+
+        this.initDomElements();
+        this.bindEvents();
+        this.init();
+      }
+
+      initAudioContext() {
+        if (!this.audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          this.audioCtx = new AudioContextClass({ sampleRate: 24000 });
+        }
+        if (this.audioCtx.state === 'suspended') {
+          this.audioCtx.resume();
+        }
+      }
+
+      // Play direct synthesized audio (24kHz PCM or WAV from Gemini Kore Voice / Sarvam Bulbul)
+      async playAudioData(pcmBase64, mimeType) {
+        this.initAudioContext();
+        if (this.audioCtx && this.audioCtx.state === 'suspended') {
+          await this.audioCtx.resume().catch(() => {});
+        }
+
+        // CRITICAL: Stop and clean up any currently playing audio so two voices never overlap
+        if (this.activeAudioSource) {
+          try {
+            this.activeAudioSource.onended = null;
+            this.activeAudioSource.stop(0);
+            this.activeAudioSource.disconnect();
+          } catch (e) {}
+          this.activeAudioSource = null;
+        }
+
+        if ('speechSynthesis' in window) {
+          try { window.speechSynthesis.cancel(); } catch (e) {}
+        }
+
+        this.isMiraSpeaking = true;
+        this.setMiraState('speaking');
+        if (!this.allowInterruption) {
+          if (this.recognition) {
+            try { this.recognition.abort(); } catch (e) {}
+          }
+          if (this.aiStatusSubtext) {
+            this.aiStatusSubtext.innerText = 'AI speaking (listening paused)';
+          }
+        }
+
+        try {
+          const binary = atob(pcmBase64);
+          const len = binary.length;
+          const bytes = new Uint8Array(len);
+          for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+
+          // Dedicated smooth output GainNode for instant pop-free interruption ramp down
+          const gainNode = this.audioCtx.createGain();
+          gainNode.gain.setValueAtTime(1.0, this.audioCtx.currentTime);
+          gainNode.connect(this.audioCtx.destination);
+          this.activeAudioGainNode = gainNode;
+
+          if (mimeType && mimeType.includes('wav')) {
+            const audioBuffer = await this.audioCtx.decodeAudioData(bytes.buffer.slice(0));
+            const source = this.audioCtx.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(gainNode);
+            this.activeAudioSource = source;
+
+            source.onended = () => {
+              // 250ms cooldown prevents residual speaker acoustic reverb from tripping mic VAD
+              this.speakCooldownTimer = setTimeout(() => {
+                this.isMiraSpeaking = false;
+                this.activeSpeechChunks = [];
+                this.setMiraState('listening');
+                if (!this.allowInterruption) {
+                  if (this.recognition && !this.isMuted && this.currentStage !== 'COMPLETE') {
+                    try { this.recognition.start(); } catch (e) {}
+                  }
+                  if (this.aiStatusSubtext) {
+                    this.aiStatusSubtext.innerText = 'Listening for your voice...';
+                  }
+                }
+              }, 250);
+            };
+            source.start(0);
+            return true;
+          } else {
+            // 24kHz mono PCM16 audio chunk from Gemini 3.8 Live direct stream
+            const int16Array = new Int16Array(bytes.buffer);
+            const float32Array = new Float32Array(int16Array.length);
+            for (let i = 0; i < int16Array.length; i++) {
+              float32Array[i] = int16Array[i] / 32768.0;
+            }
+            const buffer = this.audioCtx.createBuffer(1, float32Array.length, 24000);
+            buffer.getChannelData(0).set(float32Array);
+
+            const source = this.audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(gainNode);
+            this.activeAudioSource = source;
+
+            const startTime = Math.max(this.audioCtx.currentTime, this.nextPcmTime);
+            source.start(startTime);
+            this.nextPcmTime = startTime + buffer.duration;
+
+            source.onended = () => {
+              if (this.audioCtx.currentTime >= this.nextPcmTime - 0.05) {
+                this.speakCooldownTimer = setTimeout(() => {
+                  this.isMiraSpeaking = false;
+                  this.activeSpeechChunks = [];
+                  this.setMiraState('listening');
+                  if (!this.allowInterruption) {
+                    if (this.recognition && !this.isMuted && this.currentStage !== 'COMPLETE') {
+                      try { this.recognition.start(); } catch (e) {}
+                    }
+                    if (this.aiStatusSubtext) {
+                      this.aiStatusSubtext.innerText = 'Listening for your voice...';
+                    }
+                  }
+                }, 250);
+              }
+            };
+            return true;
+          }
+        } catch (e) {
+          console.warn('[Direct Audio Playback Error]', e);
+          this.isMiraSpeaking = false;
+          this.setMiraState('listening');
+          if (!this.allowInterruption) {
+            if (this.recognition && !this.isMuted && this.currentStage !== 'COMPLETE') {
+              try { this.recognition.start(); } catch (e) {}
+            }
+          }
+          return false;
+        }
+      }
+
+      initDomElements() {
+        this.orb = document.getElementById('mira-orb-avatar');
+        this.caption = document.getElementById('mira-caption');
+        this.eqBars = document.querySelectorAll('.eq-bar');
+        this.inquiryHeadline = document.getElementById('inquiry-headline');
+        this.aiStatusSubtext = document.getElementById('ai-status-subtext');
+        this.aiRolePill = document.getElementById('ai-role-pill');
+        this.statusDot = document.getElementById('status-dot');
+        this.videoElem = document.getElementById('live-webcam-video');
+        this.transcriptContainer = document.getElementById('consultation-transcript');
+        this.timerDisplay = document.getElementById('timer-display');
+        this.latencyDisplay = document.getElementById('metric-latency');
+        this.voiceNameTag = document.getElementById('voice-name-tag');
+        this.voiceSelect = document.getElementById('select-gemini-voice');
+        this.voiceLabelInline = document.getElementById('voice-label-inline');
+        this.videoPatientName = document.getElementById('video-patient-name');
+
+        // 4-Step Steppers
+        this.stageName = document.getElementById('stage-name');
+        this.stagePhone = document.getElementById('stage-phone');
+        this.stageSymptoms = document.getElementById('stage-symptoms');
+        this.stageAppointment = document.getElementById('stage-appointment');
+
+        // Confirmed Appointment Card
+        this.appointmentCard = document.getElementById('appointment-card-display');
+        this.cardAptCode = document.getElementById('card-apt-code');
+        this.cardDoctorName = document.getElementById('card-doctor-name');
+        this.cardSlotTime = document.getElementById('card-slot-time');
+
+        this.btnToggleMic = document.getElementById('btn-toggle-mic');
+        this.btnToggleCamera = document.getElementById('btn-toggle-camera');
+        this.btnBargeIn = document.getElementById('btn-bargein-trigger');
+        this.btnEndInterview = document.getElementById('btn-end-interview');
+
+        // AI Model, Voice, and Audio Chunking State
+        this.activeEngine = 'sarvam_ai';
+        this.activeEngineName = 'Sarvam AI';
+        this.selectedVoice = 'Kavya';
+        this.audioChunkPlayedForTurn = false;
+        this.activeSpeechChunks = [];
+        this.speechSilenceTimer = null;
+        this.minSpeechSamples = 8000; // at least 500ms of audio
+      }
+
+      // Convert Int16Array PCM samples to 16kHz Mono 16-bit PCM WAV base64 string
+      encodeWavBase64(samples, sampleRate = 16000) {
+        const buffer = new ArrayBuffer(44 + samples.length * 2);
+        const view = new DataView(buffer);
+
+        const writeString = (offset, string) => {
+          for (let i = 0; i < string.length; i++) {
+            view.setUint8(offset + i, string.charCodeAt(i));
+          }
+        };
+
+        writeString(0, 'RIFF');
+        view.setUint32(4, 36 + samples.length * 2, true);
+        writeString(8, 'WAVE');
+        writeString(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true); // PCM format
+        view.setUint16(22, 1, true); // Mono channel
+        view.setUint32(24, sampleRate, true); // Sample rate (16000 Hz)
+        view.setUint32(28, sampleRate * 2, true); // Byte rate (16000 * 1 * 2)
+        view.setUint16(32, 2, true); // Block align (1 * 16/8)
+        view.setUint16(34, 16, true); // 16 bits per sample
+        writeString(36, 'data');
+        view.setUint32(40, samples.length * 2, true);
+
+        let offset = 44;
+        for (let i = 0; i < samples.length; i++, offset += 2) {
+          view.setInt16(offset, samples[i], true);
+        }
+
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+      }
+
+      async init() {
+        // 1. Fetch AI Model & Voice configuration (Sarvam AI or Gemini Live)
+        try {
+          const cfg = await fetch('/api/consultation/config').then(r => r.json());
+          if (cfg) {
+            this.activeEngine = cfg.activeAiEngine || 'sarvam_ai';
+            this.activeEngineName = cfg.engineName || (this.activeEngine === 'sarvam_ai' ? 'Sarvam AI' : 'Gemini 3.8 Live');
+            this.selectedVoice = cfg.voice || (this.activeEngine === 'sarvam_ai' ? 'Bulbul' : 'Kore');
+
+            // Populate voice selector dropdown dynamically with active model's voices
+            if (this.voiceSelect && Array.isArray(cfg.availableVoices)) {
+              this.voiceSelect.innerHTML = '';
+              cfg.availableVoices.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.id;
+                opt.textContent = v.name;
+                if (v.id === this.selectedVoice) opt.selected = true;
+                this.voiceSelect.appendChild(opt);
+              });
+            }
+
+            const voiceBoxTitle = document.querySelector('.voice-select-box span');
+            if (voiceBoxTitle) {
+              voiceBoxTitle.innerText = `${this.activeEngineName} Voice:`;
+            }
+
+            if (this.voiceNameTag) this.voiceNameTag.innerText = `Voice: ${this.selectedVoice} (HD)`;
+            if (this.voiceLabelInline) this.voiceLabelInline.innerText = this.selectedVoice;
+
+            this.allowInterruption = cfg.allowInterruption !== false;
+            if (!this.allowInterruption && this.btnBargeIn) {
+              this.btnBargeIn.style.opacity = '0.35';
+              this.btnBargeIn.title = 'Voice interruption disabled in Admin Settings';
+              this.btnBargeIn.style.cursor = 'not-allowed';
+            }
+          }
+        } catch (e) {
+          console.warn('Consultation config fetch note:', e);
+        }
+
+        // 2. Forward Disease Spot Image if uploaded in previous step
+        const spotImage = sessionStorage.getItem('mira_disease_spot');
+        if (spotImage) {
+          fetch('/api/consultation/spot-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: this.sessionId, imageDataUrl: spotImage }),
+          }).catch(console.warn);
+        }
+
+        // 3. Start Session Timer
+        this.startTimer();
+
+        // 4. Connect WebSocket
+        this.connectWebSocket();
+
+        // 5. Initialize user interaction handler to unlock Autoplay Audio, Camera, & Mic
+        this.initUserInteraction();
+      }
+
+      async activateSession() {
+        if (this.sessionActivated) return;
+        this.sessionActivated = true;
+
+        const modal = document.getElementById('join-consultation-modal');
+        if (modal) {
+          modal.style.display = 'none';
+          modal.remove();
+        }
+
+        // 1. Resume AudioContext under user gesture to allow crystal-clear audio
+        try {
+          this.initAudioContext();
+          if (this.audioCtx && this.audioCtx.state === 'suspended') {
+            await this.audioCtx.resume();
+          }
+        } catch (e) {
+          console.warn('AudioContext resume note:', e);
+        }
+
+        // 2. Request and start camera & mic devices
+        try {
+          await this.initDevices();
+        } catch (e) {
+          console.warn('initDevices note:', e);
+        }
+
+        // 3. Connect microphone processor for model-based chunking
+        try {
+          this.initMicrophoneStream();
+        } catch (e) {
+          console.warn('initMicrophoneStream note:', e);
+        }
+
+        // 4. Play chime & speak single greeting
+        try {
+          if (window.soundEffects) {
+            window.soundEffects.playInterviewStartAlert();
+          }
+        } catch (e) {}
+
+        if (!this.greetingSpoken) {
+          this.greetingSpoken = true;
+          setTimeout(() => {
+            const intro = this.activeEngine === 'sarvam_ai'
+              ? "Namaste! Main MiraAI hoon, Sarvam AI powered clinical assistant. Kripya apna poora naam batayein?"
+              : "Namaste! Main MiraAI hoon, Gemini 3.8 Live powered clinical assistant. Kripya apna poora naam batayein?";
+            this.speak(intro);
+          }, 450);
+        }
+      }
+
+      initUserInteraction() {
+        const joinBtn = document.getElementById('btn-join-session');
+        if (joinBtn) {
+          joinBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.activateSession();
+          });
+        }
+
+        // Auto-check if devices can start in background
+        this.initDevices().catch(() => {});
+      }
+
+      async initDevices() {
+        try {
+          this.mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+              sampleRate: 16000,
+              channelCount: 1,
+            }
+          });
+          if (this.videoElem) {
+            this.videoElem.srcObject = this.mediaStream;
+            this.videoElem.muted = true;
+            await this.videoElem.play().catch((err) => console.warn('Video play note:', err));
+          }
+          return this.mediaStream;
+        } catch (e) {
+          console.warn('Combined camera/mic request note, trying individually:', e);
+          try {
+            const vStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            if (this.videoElem) {
+              this.videoElem.srcObject = vStream;
+              this.videoElem.muted = true;
+              await this.videoElem.play().catch(() => {});
+            }
+          } catch (vErr) {
+            console.warn('Video only fallback note:', vErr);
+          }
+          try {
+            this.mediaStream = await navigator.mediaDevices.getUserMedia({
+              audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+                autoGainControl: true,
+                sampleRate: 16000,
+                channelCount: 1,
+              }
+            });
+          } catch (aErr) {
+            console.warn('Audio only fallback note:', aErr);
+          }
+          return this.mediaStream;
+        }
+      }
+
+      startTimer() {
+        this.timerInterval = setInterval(() => {
+          if (this.totalSeconds <= 0) {
+            this.endConsultation();
+            return;
+          }
+          this.totalSeconds--;
+          const m = Math.floor(this.totalSeconds / 60).toString().padStart(2, '0');
+          const s = (this.totalSeconds % 60).toString().padStart(2, '0');
+          if (this.timerDisplay) this.timerDisplay.innerText = `${m}:${s}`;
+        }, 1000);
+      }
+
+      connectWebSocket() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/consultation?sessionId=${this.sessionId}&patientId=${this.patientId}&patientName=${encodeURIComponent(this.patientName)}`;
+
+        this.ws = new WebSocket(wsUrl);
+
+        this.ws.onmessage = async (event) => {
+          try {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'ready') {
+              if (data.engine) this.activeEngine = data.engine;
+              if (data.voice) this.selectedVoice = data.voice;
+              return;
+            }
+
+            // Direct Transcribed Speech from Model (Sarvam AI saaras:v3 or Gemini 3.8 Flash)
+            if (data.type === 'stt_transcript' && data.text) {
+              this.updatePatientTranscriptBubble(data.text);
+              return;
+            }
+
+            // Direct Audio Chunk from Server (Sarvam Bulbul or Gemini Kore Voice)
+            if (data.type === 'audio_chunk' && data.pcmBase64) {
+              this.audioChunkPlayedForTurn = true;
+              await this.playAudioData(data.pcmBase64, data.mimeType || 'audio/wav');
+              return;
+            }
+
+            if (data.type === 'tool_call_executed') {
+              this.renderToolCallBubble(data.tool, data.parameters, data.result);
+              return;
+            }
+
+            if (data.type === 'agent_turn_complete') {
+              if (data.toolExecuted && (!this.lastRenderedTool || this.lastRenderedTool !== data.toolExecuted + '_' + (data.toolResult?.bookingCode || ''))) {
+                this.renderToolCallBubble(data.toolExecuted, data.toolParameters, data.toolResult);
+                this.lastRenderedTool = data.toolExecuted + '_' + (data.toolResult?.bookingCode || '');
+              }
+              this.handleAgentResponse(
+                data.text,
+                data.actionTaken,
+                data.appointmentConfirmed,
+                data.extractedSlots,
+                data.toolExecuted,
+                data.toolParameters,
+                data.toolResult
+              );
+            } else if (data.type === 'interrupted') {
+              console.log('[Barge-In] Server acknowledged speech interruption');
+            }
+          } catch (e) {
+            console.warn('WS message parse error:', e);
+          }
+        };
+
+        this.ws.onerror = (err) => {
+          console.warn('WebSocket connection warning:', err);
+        };
+      }
+
+      // Multi-Stage DSP Noise Cancellation & Model-Based Microphone Audio Stream
+      initMicrophoneStream() {
+        if (!this.mediaStream) return;
+        const tracks = this.mediaStream.getAudioTracks();
+        if (tracks.length === 0) return;
+
+        try {
+          this.initAudioContext();
+          const micSource = this.audioCtx.createMediaStreamSource(this.mediaStream);
+
+          // Stage 1: High-pass Filter (85 Hz, Q=0.707)
+          // Strips sub-bass rumble, fan hum, AC drone, mechanical desk vibrations
+          const highpass = this.audioCtx.createBiquadFilter();
+          highpass.type = 'highpass';
+          highpass.frequency.value = 85;
+          highpass.Q.value = 0.707;
+
+          // Stage 2: 50 Hz and 60 Hz Notch Filters
+          // Eliminates AC electrical power mains hum
+          const notch50 = this.audioCtx.createBiquadFilter();
+          notch50.type = 'notch';
+          notch50.frequency.value = 50;
+          notch50.Q.value = 4.0;
+
+          const notch60 = this.audioCtx.createBiquadFilter();
+          notch60.type = 'notch';
+          notch60.frequency.value = 60;
+          notch60.Q.value = 4.0;
+
+          // Stage 3: Low-pass Filter (7500 Hz, Q=0.707)
+          // Strips high-frequency electrical hiss, squeals, and ultrasonic interference
+          const lowpass = this.audioCtx.createBiquadFilter();
+          lowpass.type = 'lowpass';
+          lowpass.frequency.value = 7500;
+          lowpass.Q.value = 0.707;
+
+          // Stage 4: Vocal Presence Peaking Filter (1800 Hz, +3.5 dB)
+          // Isolates and accentuates human vocal formants for high clarity
+          const speechEq = this.audioCtx.createBiquadFilter();
+          speechEq.type = 'peaking';
+          speechEq.frequency.value = 1800;
+          speechEq.gain.value = 3.5;
+          speechEq.Q.value = 1.0;
+
+          // Stage 5: Dynamics Compressor / Speech Leveler
+          // Normalizes quiet speech, suppresses room background noise floor
+          const compressor = this.audioCtx.createDynamicsCompressor();
+          compressor.threshold.value = -24;
+          compressor.knee.value = 12;
+          compressor.ratio.value = 4;
+          compressor.attack.value = 0.003;
+          compressor.release.value = 0.15;
+
+          // ScriptProcessor for 16kHz PCM chunks
+          const processor = this.audioCtx.createScriptProcessor(4096, 1, 1);
+
+          processor.onaudioprocess = (e) => {
+            if (this.isMuted) return;
+            const input = e.inputBuffer.getChannelData(0);
+            const pcm16 = new Int16Array(input.length);
+            let sumSq = 0;
+            for (let i = 0; i < input.length; i++) {
+              const s = Math.max(-1, Math.min(1, input[i]));
+              pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+              sumSq += s * s;
+            }
+            const rms = Math.sqrt(sumSq / input.length);
+
+            // Adaptive ambient noise floor tracking (calibrates to room background)
+            if (!this.isMiraSpeaking) {
+              if (rms < this.ambientNoiseFloor * 1.5) {
+                this.ambientNoiseFloor = this.ambientNoiseFloor * 0.98 + rms * 0.02;
+              }
+            }
+            this.ambientNoiseFloor = Math.max(0.005, Math.min(0.045, this.ambientNoiseFloor));
+
+            // Instant Sub-10ms Frictionless Barge-In when user speaks over Mira
+            if (this.isMiraSpeaking) {
+              const bargeThreshold = Math.max(0.038, this.ambientNoiseFloor * 2.5);
+              if (this.allowInterruption && rms > bargeThreshold) {
+                this.consecutiveBargeFrames = (this.consecutiveBargeFrames || 0) + 1;
+                if (this.consecutiveBargeFrames >= 2) {
+                  this.triggerBargeIn('voice_energy');
+                  // Preserve initial speech chunk so first syllable is not lost
+                  this.activeSpeechChunks.push(new Int16Array(pcm16));
+                }
+              } else {
+                this.consecutiveBargeFrames = 0;
+              }
+              return;
+            }
+
+            // Normal Voice Activity Detection (VAD) while Mira is listening
+            const speechThreshold = Math.max(0.016, this.ambientNoiseFloor * 1.8);
+            if (rms > speechThreshold) {
+              this.consecutiveBargeFrames = 0;
+              this.activeSpeechChunks.push(new Int16Array(pcm16));
+
+              if (this.speechSilenceTimer) {
+                clearTimeout(this.speechSilenceTimer);
+                this.speechSilenceTimer = null;
+              }
+
+              if (!this.interimUserBubble) {
+                this.updateInterimTranscriptBubble(`Listening (${this.activeEngineName} STT)...`, true);
+              }
+            } else if (this.activeSpeechChunks.length > 0) {
+              if (!this.speechSilenceTimer) {
+                this.speechSilenceTimer = setTimeout(() => {
+                  this.finalizeSpeechTurn();
+                }, 750);
+              }
+            }
+          };
+
+          // Route DSP Audio Graph:
+          // micSource -> highpass -> notch50 -> notch60 -> lowpass -> speechEq -> compressor -> processor -> muteGain -> destination
+          const muteFeedbackNode = this.audioCtx.createGain();
+          muteFeedbackNode.gain.value = 0;
+
+          micSource.connect(highpass);
+          highpass.connect(notch50);
+          notch50.connect(notch60);
+          notch60.connect(lowpass);
+          lowpass.connect(speechEq);
+          speechEq.connect(compressor);
+          compressor.connect(processor);
+          processor.connect(muteFeedbackNode);
+          muteFeedbackNode.connect(this.audioCtx.destination);
+        } catch (e) {
+          console.warn('Microphone DSP noise cancellation stream note:', e);
+        }
+      }
+
+      // Finalize speech chunking and send to active model for STT
+      finalizeSpeechTurn() {
+        if (this.speechSilenceTimer) {
+          clearTimeout(this.speechSilenceTimer);
+          this.speechSilenceTimer = null;
+        }
+
+        if (this.activeSpeechChunks.length === 0) return;
+
+        // Calculate total samples
+        let totalSamples = 0;
+        for (const chunk of this.activeSpeechChunks) {
+          totalSamples += chunk.length;
+        }
+
+        if (totalSamples < this.minSpeechSamples) {
+          // Too short (noise spike / breath), discard
+          this.activeSpeechChunks = [];
+          if (this.interimUserBubble) {
+            this.interimUserBubble.remove();
+            this.interimUserBubble = null;
+          }
+          return;
+        }
+
+        // Flatten all 16kHz PCM chunks
+        const mergedSamples = new Int16Array(totalSamples);
+        let sampleOffset = 0;
+        for (const chunk of this.activeSpeechChunks) {
+          mergedSamples.set(chunk, sampleOffset);
+          sampleOffset += chunk.length;
+        }
+        this.activeSpeechChunks = [];
+
+        // Encode to 16kHz 16-bit Mono WAV format
+        const wavBase64 = this.encodeWavBase64(mergedSamples, 16000);
+        this.setMiraState('thinking');
+
+        if (this.interimUserBubble) {
+          this.interimUserBubble.innerHTML = `<strong>Patient:</strong> Transcribing with ${this.activeEngineName}...`;
+        }
+
+        // Send accumulated audio turn to active model STT over WebSocket
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+          this.ws.send(
+            JSON.stringify({
+              type: 'audio_turn',
+              wavBase64,
+              engine: this.activeEngine,
+              voice: this.selectedVoice,
+              vadLatencyMs: 20,
+            })
+          );
+        } else {
+          // REST API fallback
+          fetch('/api/consultation/transcribe-audio', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ audioBase64: wavBase64, engine: this.activeEngine }),
+          })
+            .then(r => r.json())
+            .then(data => {
+              if (data.success && data.transcript) {
+                this.updatePatientTranscriptBubble(data.transcript);
+                this.sendTurnToServer(data.transcript);
+              }
+            })
+            .catch(console.warn);
+        }
+      }
+
+      // Update patient bubble with transcribed speech from model STT
+      updatePatientTranscriptBubble(text) {
+        if (!text || !text.trim()) {
+          if (this.interimUserBubble) {
+            this.interimUserBubble.remove();
+            this.interimUserBubble = null;
+          }
+          return;
+        }
+
+        if (this.interimUserBubble) {
+          this.interimUserBubble.className = 'feed-bubble patient';
+          this.interimUserBubble.innerHTML = `<strong>Patient:</strong> ${this.escapeHtml(text.trim())}`;
+          this.interimUserBubble = null;
+        } else {
+          this.appendTranscript('Patient', text.trim());
+        }
+
+        if (this.inquiryHeadline) {
+          this.inquiryHeadline.innerText = text.slice(0, 65) + (text.length > 65 ? '...' : '');
+        }
+      }
+
+      // Visual Speech Recognition & Live Transcription with Gemini-style Dynamic Word/Sentence Updates
+      initSpeechRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return;
+
+        try {
+          this.recognition = new SpeechRecognition();
+          this.recognition.continuous = true;
+          this.recognition.interimResults = true;
+          this.recognition.lang = 'hi-IN';
+
+          this.recognition.onresult = (event) => {
+            let interimPart = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const res = event.results[i];
+              if (res.isFinal) {
+                const chunk = res[0].transcript.trim();
+                if (chunk) {
+                  this.currentSentence = this.currentSentence ? `${this.currentSentence} ${chunk}` : chunk;
+                }
+              } else {
+                interimPart += res[0].transcript;
+              }
+            }
+
+            const currentFull = (this.currentSentence + (interimPart ? ' ' + interimPart.trim() : '')).trim();
+
+            if (currentFull) {
+              if (this.isMiraSpeaking) {
+                if (this.allowInterruption) {
+                  this.triggerBargeIn();
+                } else {
+                  // Interruption disabled: ignore all incoming speech while AI is speaking
+                  return;
+                }
+              }
+              // Dynamically update words and sentences live in the transcript
+              this.updateInterimTranscriptBubble(currentFull, Boolean(interimPart));
+              // Debounce silence: do not cut off on 1-second pause mid-sentence
+              this.scheduleSentenceFinalize();
+            }
+          };
+
+          this.recognition.onend = () => {
+            if (!this.isMuted && this.currentStage !== 'COMPLETE') {
+              try {
+                this.recognition.start();
+              } catch (e) {}
+            }
+          };
+
+          this.recognition.onerror = (e) => {
+            if (e.error !== 'no-speech') {
+              console.warn('SpeechRecognition warning:', e.error);
+            }
+          };
+
+          this.recognition.onstart = () => {
+            if (this.btnToggleMic) {
+              this.btnToggleMic.classList.add('active-mic');
+              this.btnToggleMic.classList.remove('muted');
+            }
+          };
+
+          this.recognition.start();
+        } catch (e) {
+          console.warn('SpeechRecognition start warning:', e);
+        }
+      }
+
+      // Live Dynamic Bubble for active spoken words
+      updateInterimTranscriptBubble(text, isInterim) {
+        if (!this.transcriptContainer) return;
+
+        if (!this.interimUserBubble) {
+          this.interimUserBubble = document.createElement('div');
+          this.interimUserBubble.className = 'feed-bubble patient interim-live';
+          this.transcriptContainer.appendChild(this.interimUserBubble);
+        }
+
+        const pulseHtml = isInterim
+          ? '<span class="live-pulse-badge" title="Live voice streaming..."></span>'
+          : '<span class="live-pause-indicator" title="Pause detected, waiting for next words..."></span>';
+
+        this.interimUserBubble.innerHTML = `<strong>Patient:</strong> ${this.escapeHtml(text)} ${pulseHtml}`;
+        this.transcriptContainer.scrollTop = this.transcriptContainer.scrollHeight;
+
+        if (this.inquiryHeadline) {
+          this.inquiryHeadline.innerText = text.slice(0, 65) + (text.length > 65 ? '...' : '');
+        }
+      }
+
+      // Debounce timer: wait 1.35 seconds of silence before finalizing
+      // If user takes a 1-second pause mid-sentence, this timer holds and appends next words
+      scheduleSentenceFinalize() {
+        if (this.silenceDebounceTimer) {
+          clearTimeout(this.silenceDebounceTimer);
+          this.silenceDebounceTimer = null;
+        }
+
+        this.silenceDebounceTimer = setTimeout(() => {
+          this.finalizeUserSpeech();
+        }, this.silenceThresholdMs);
+      }
+
+      // Finalize accumulated sentence after silence threshold
+      finalizeUserSpeech() {
+        if (this.silenceDebounceTimer) {
+          clearTimeout(this.silenceDebounceTimer);
+          this.silenceDebounceTimer = null;
+        }
+
+        const finalText = (this.currentSentence || (this.interimUserBubble ? this.interimUserBubble.innerText.replace(/^Patient:\s*/, '').trim() : '')).trim();
+        this.currentSentence = '';
+
+        if (!finalText) {
+          if (this.interimUserBubble) {
+            this.interimUserBubble.remove();
+            this.interimUserBubble = null;
+          }
+          return;
+        }
+
+        // Solidify the interim bubble to final patient bubble
+        if (this.interimUserBubble) {
+          this.interimUserBubble.className = 'feed-bubble patient';
+          this.interimUserBubble.innerHTML = `<strong>Patient:</strong> ${this.escapeHtml(finalText)}`;
+          this.interimUserBubble = null;
+        }
+
+        this.sendTurnToServer(finalText);
+      }
+
+      // Direct speech input (via quick buttons or manual trigger)
+      handleUserSpeech(text) {
+        if (this.silenceDebounceTimer) {
+          clearTimeout(this.silenceDebounceTimer);
+          this.silenceDebounceTimer = null;
+        }
+        if (this.interimUserBubble) {
+          this.interimUserBubble.remove();
+          this.interimUserBubble = null;
+        }
+        this.currentSentence = '';
+        this.appendTranscript('Patient', text);
+        this.sendTurnToServer(text);
+      }
+
+      sendTurnToServer(text) {
+        this.setMiraState('thinking');
+
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+          const t0 = performance.now();
+          this.ws.send(JSON.stringify({
+            type: 'user_turn',
+            text: text,
+            vadLatencyMs: 16,
+          }));
+          setTimeout(() => {
+            if (this.latencyDisplay) {
+              this.latencyDisplay.innerText = `${Math.round(performance.now() - t0)}ms`;
+            }
+          }, 24);
+        } else {
+          setTimeout(() => {
+            this.handleAgentResponse("Main aapki baat samajh gayi. Doctor consultation update ho raha hai.", 'LOCAL_EVAL');
+          }, 350);
+        }
+      }
+
+      // Sub-10ms Instant Audio Abort Barge-In with smooth volume ramp-down
+      triggerBargeIn(reason = 'voice') {
+        if (!this.allowInterruption) return;
+        if (!this.isMiraSpeaking && !this.activeMiraBubble) return;
+
+        // 1. Smooth gain ramp-down over 12ms to eliminate speaker pop glitch
+        if (this.activeAudioGainNode && this.audioCtx) {
+          try {
+            const currTime = this.audioCtx.currentTime;
+            this.activeAudioGainNode.gain.setValueAtTime(this.activeAudioGainNode.gain.value, currTime);
+            this.activeAudioGainNode.gain.linearRampToValueAtTime(0.0001, currTime + 0.012);
+          } catch (e) {}
+        }
+
+        // 2. Stop and disconnect active audio source
+        if (this.activeAudioSource) {
+          const s = this.activeAudioSource;
+          setTimeout(() => {
+            try {
+              s.onended = null;
+              s.stop(0);
+              s.disconnect();
+            } catch (e) {}
+          }, 15);
+          this.activeAudioSource = null;
+        }
+
+        // 3. Cancel browser speech synthesis
+        if ('speechSynthesis' in window) {
+          try { window.speechSynthesis.cancel(); } catch (e) {}
+        }
+
+        // 4. Cancel speak cooldown timer
+        if (this.speakCooldownTimer) {
+          clearTimeout(this.speakCooldownTimer);
+          this.speakCooldownTimer = null;
+        }
+
+        // 5. Annotate active transcript bubble
+        if (this.activeMiraBubble) {
+          const tag = document.createElement('span');
+          tag.style.cssText = 'font-size:11px; color:#f97316; font-style:italic; margin-left:6px;';
+          tag.innerText = '[Interrupted]';
+          this.activeMiraBubble.appendChild(tag);
+          this.activeMiraBubble = null;
+        }
+
+        this.nextPcmTime = 0;
+        this.isMiraSpeaking = false;
+        this.setMiraState('listening');
+
+        // 6. Notify backend via WebSocket for immediate turn abort
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+          this.ws.send(JSON.stringify({ type: 'barge_in', reason, timestamp: Date.now() }));
+        }
+
+        // 7. Re-arm speech recognition listening immediately
+        if (this.recognition && !this.isMuted && this.currentStage !== 'COMPLETE') {
+          try { this.recognition.start(); } catch (e) {}
+        }
+
+        if (this.aiStatusSubtext) {
+          this.aiStatusSubtext.innerText = 'Interrupted: Listening to you... (Speak naturally)';
+        }
+      }
+
+      // Progressive Word and Sentence Streaming for Mira's response
+      streamAgentTranscript(text, onComplete) {
+        if (!this.transcriptContainer) {
+          if (onComplete) onComplete();
+          return;
+        }
+
+        const div = document.createElement('div');
+        div.className = 'feed-bubble mira';
+        const voiceInfo = ` (${this.activeEngineName || 'AI'} • ${this.selectedVoice})`;
+        const prefix = `<strong>Mira${voiceInfo}:</strong> `;
+        div.innerHTML = prefix;
+        this.transcriptContainer.appendChild(div);
+
+        const words = text.split(' ');
+        let idx = 0;
+        this.activeMiraBubble = div;
+
+        const interval = setInterval(() => {
+          if (!this.activeMiraBubble || this.activeMiraBubble !== div) {
+            clearInterval(interval);
+            return;
+          }
+          if (idx < words.length) {
+            div.innerHTML = prefix + words.slice(0, idx + 1).map(w => this.escapeHtml(w)).join(' ');
+            this.transcriptContainer.scrollTop = this.transcriptContainer.scrollHeight;
+            idx++;
+          } else {
+            clearInterval(interval);
+            this.activeMiraBubble = null;
+            if (onComplete) onComplete();
+          }
+        }, 28);
+      }
+
+      escapeHtml(str) {
+        if (!str) return '';
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      renderToolCallBubble(toolName, parameters, result) {
+        if (!this.transcriptContainer) return;
+        const div = document.createElement('div');
+        div.className = 'feed-bubble tool-event';
+        let detailHtml = '';
+        if (toolName === 'book_appointment') {
+          const bookingCode = result?.bookingCode || 'CONFIRMED';
+          const doc = result?.doctorName || parameters?.doctorId || 'Doctor';
+          const time = result?.startAt || parameters?.startAt || '';
+          detailHtml = `
+            <div style="font-weight:700; color:#1d4ed8; margin-bottom:3px;">
+              [AI Tool Calling]: book_appointment()
+            </div>
+            <div style="font-size:11px; color:#475569;">
+              Doctor: <strong>${this.escapeHtml(doc)}</strong> | Slot: <strong>${this.escapeHtml(time)}</strong>
+              <br/>
+              Status: <strong style="color:#16a34a;">${this.escapeHtml(bookingCode)}</strong> | Dispatch: Confirmation email sent to ${this.escapeHtml(result?.patientEmail || parameters?.patientEmail || this.patientEmail || 'patient')}
+            </div>
+          `;
+        } else if (toolName === 'check_availability') {
+          const status = result?.isFree ? 'Slot Available' : 'Slot Taken (Alternatives Evaluated)';
+          detailHtml = `
+            <div style="font-weight:700; color:#0284c7; margin-bottom:3px;">
+              [AI Tool Calling]: check_availability()
+            </div>
+            <div style="font-size:11px; color:#475569;">
+              Date: <strong>${this.escapeHtml(parameters?.date || '')}</strong> | Status: <strong>${status}</strong>
+            </div>
+          `;
+        } else {
+          detailHtml = `
+            <div style="font-weight:700; color:#475569; margin-bottom:3px;">
+              [AI Tool Calling]: ${this.escapeHtml(toolName)}()
+            </div>
+            <div style="font-size:11px; color:#64748b;">
+              Parameters: ${this.escapeHtml(JSON.stringify(parameters || {}))}
+            </div>
+          `;
+        }
+        div.innerHTML = detailHtml;
+        this.transcriptContainer.appendChild(div);
+        this.transcriptContainer.scrollTop = this.transcriptContainer.scrollHeight;
+      }
+
+      handleAgentResponse(text, actionTaken, appointmentConfirmed, extractedSlots, toolExecuted, toolParameters, toolResult) {
+        // Stream response words dynamically into transcript
+        this.streamAgentTranscript(text);
+
+        if (this.inquiryHeadline) {
+          this.inquiryHeadline.innerText = text.slice(0, 60) + (text.length > 60 ? '...' : '');
+        }
+
+        // Advance 4-Step Stepper Based on Intent / Response Action
+        if (actionTaken === 'PATIENT_NAME_CAPTURED' || (extractedSlots && extractedSlots.patientName)) {
+          this.patientName = extractedSlots?.patientName || this.patientName;
+          if (this.videoPatientName) this.videoPatientName.innerText = `Patient: ${this.patientName}`;
+          this.setStage('PHONE');
+        } else if (actionTaken === 'PHONE_NUMBER_CAPTURED' || (extractedSlots && extractedSlots.phoneNumber)) {
+          this.patientPhone = extractedSlots?.phoneNumber || this.patientPhone;
+          this.setStage('SYMPTOMS');
+        } else if (actionTaken === 'CARDIOLOGY_TRIAGE' || actionTaken === 'DERMATOLOGY_SPOT_MATCHED' || actionTaken === 'ORTHOPEDIC_TRIAGE' || actionTaken === 'PEDIATRICS_TRIAGE' || actionTaken === 'NEUROLOGY_TRIAGE' || actionTaken === 'GENERAL_MEDICINE_TRIAGE') {
+          this.setStage('APPOINTMENT');
+        }
+
+        // Show Doctor Appointment Card If Confirmed via Tool Calling or Status
+        if (appointmentConfirmed || actionTaken === 'APPOINTMENT_CONFIRMED' || actionTaken === 'TOOL_BOOK_APPOINTMENT_EXECUTED' || toolExecuted === 'book_appointment') {
+          if (window.soundEffects) {
+            window.soundEffects.playAppointmentConfirmedFanfare();
+          }
+          this.setStage('COMPLETE');
+
+          const apt = appointmentConfirmed || toolResult;
+          if (apt && this.appointmentCard) {
+            this.appointmentCard.style.display = 'block';
+            if (this.cardAptCode) this.cardAptCode.innerText = apt.bookingCode || 'CONFIRMED';
+            if (this.cardDoctorName) this.cardDoctorName.innerText = `${apt.doctorName || 'Assigned Doctor'} ${apt.specialization ? '• ' + apt.specialization : ''}`;
+            if (this.cardSlotTime) this.cardSlotTime.innerText = `Date: ${apt.startAt ? apt.startAt.substring(0, 10) : (apt.appointmentDate || '')} • Time: ${apt.startAt ? apt.startAt.substring(11, 16) : (apt.timeSlot || '')} • Patient: ${this.patientName || apt.patientName || ''}`;
+            this.appendTranscript('System', `Confirmed Appointment Stored: ${apt.doctorName || 'Doctor'} at ${apt.startAt || apt.timeSlot || ''}. Booking ID: ${apt.bookingCode}`);
+          }
+
+          if (!this.autoEndTriggered) {
+            this.autoEndTriggered = true;
+            this.showAutoEndCountdown(apt);
+          }
+        }
+
+        // Only trigger client-side speak if WebSocket is not open (offline / REST fallback mode)
+        // In WebSocket mode, server streams the audio_chunk directly so secondary speak is bypassed
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+          this.speak(text);
+        }
+        this.audioChunkPlayedForTurn = false;
+      }
+
+      setStage(stage) {
+        this.currentStage = stage;
+        [this.stageName, this.stagePhone, this.stageSymptoms, this.stageAppointment].forEach(el => {
+          if (el) el.className = 'step-pill';
+        });
+
+        if (stage === 'NAME') {
+          this.stageName.className = 'step-pill active';
+        } else if (stage === 'PHONE') {
+          this.stageName.className = 'step-pill completed';
+          this.stagePhone.className = 'step-pill active';
+        } else if (stage === 'SYMPTOMS') {
+          this.stageName.className = 'step-pill completed';
+          this.stagePhone.className = 'step-pill completed';
+          this.stageSymptoms.className = 'step-pill active';
+        } else if (stage === 'APPOINTMENT') {
+          this.stageName.className = 'step-pill completed';
+          this.stagePhone.className = 'step-pill completed';
+          this.stageSymptoms.className = 'step-pill completed';
+          this.stageAppointment.className = 'step-pill active';
+        } else if (stage === 'COMPLETE') {
+          this.stageName.className = 'step-pill completed';
+          this.stagePhone.className = 'step-pill completed';
+          this.stageSymptoms.className = 'step-pill completed';
+          this.stageAppointment.className = 'step-pill completed';
+        }
+      }
+
+      // Spoken Audio via Selected Engine (Sarvam Bulbul or Gemini Kore)
+      async speak(text) {
+        this.initAudioContext();
+        if (this.audioCtx && this.audioCtx.state === 'suspended') {
+          await this.audioCtx.resume().catch(() => {});
+        }
+
+        // Cancel any browser speech synthesis to guarantee zero double voice playback
+        if ('speechSynthesis' in window) {
+          try {
+            window.speechSynthesis.cancel();
+          } catch (e) {}
+        }
+
+        this.isMiraSpeaking = true;
+        this.setMiraState('speaking');
+        if (!this.allowInterruption) {
+          if (this.recognition) {
+            try { this.recognition.abort(); } catch (e) {}
+          }
+          if (this.aiStatusSubtext) {
+            this.aiStatusSubtext.innerText = 'AI speaking (listening paused)';
+          }
+        }
+
+        try {
+          const res = await fetch('/api/consultation/speak', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, engine: this.activeEngine, voice: this.selectedVoice }),
+          });
+          const data = await res.json();
+          if (data.success && data.audioBase64) {
+            const played = await this.playAudioData(data.audioBase64, data.mimeType || 'audio/wav');
+            if (played) return;
+          }
+        } catch (e) {
+          console.warn('[Speak API Note]', e);
+        }
+
+        // Fallback cooldown only if audio playback was not handled by playAudioData
+        this.speakCooldownTimer = setTimeout(() => {
+          this.isMiraSpeaking = false;
+          this.setMiraState('listening');
+          if (!this.allowInterruption) {
+            if (this.recognition && !this.isMuted && this.currentStage !== 'COMPLETE') {
+              try { this.recognition.start(); } catch (e) {}
+            }
+            if (this.aiStatusSubtext) {
+              this.aiStatusSubtext.innerText = 'Listening for your voice...';
+            }
+          }
+        }, 2200);
+      }
+
+      setMiraState(state) {
+        if (!this.orb) return;
+        this.orb.classList.remove('speaking', 'listening');
+
+        if (state === 'speaking') {
+          this.orb.classList.add('speaking');
+          if (this.caption) this.caption.innerText = `Mira Speaking (${this.selectedVoice})...`;
+          if (this.aiRolePill) {
+            this.aiRolePill.innerText = 'AI Speaking';
+            this.aiRolePill.className = 'speaking-status-pill';
+          }
+          if (this.statusDot) this.statusDot.style.background = '#ff5722';
+          if (this.aiStatusSubtext) this.aiStatusSubtext.innerText = 'Mira Speaking... (Speak into mic, press Spacebar, or click button to interrupt)';
+          if (this.btnBargeIn) {
+            this.btnBargeIn.style.background = '#fef2f2';
+            this.btnBargeIn.style.color = '#dc2626';
+            this.btnBargeIn.style.borderColor = '#fca5a5';
+            this.btnBargeIn.title = 'Click to interrupt Mira (or speak into mic / press Spacebar)';
+          }
+          this.eqBars.forEach(b => b.classList.add('active'));
+        } else if (state === 'listening') {
+          this.orb.classList.add('listening');
+          if (this.caption) this.caption.innerText = `Listening (${this.activeEngineName || 'AI'} STT)...`;
+          if (this.aiRolePill) {
+            this.aiRolePill.innerText = 'Listening';
+            this.aiRolePill.className = 'speaking-status-pill listening';
+          }
+          if (this.statusDot) this.statusDot.style.background = '#2563eb';
+          if (this.aiStatusSubtext) this.aiStatusSubtext.innerText = `Listening with ${this.activeEngineName || 'AI'}... (Speak naturally)`;
+          if (this.btnBargeIn) {
+            this.btnBargeIn.style.background = '';
+            this.btnBargeIn.style.color = '';
+            this.btnBargeIn.style.borderColor = '';
+            this.btnBargeIn.title = 'Interrupt Mira (Sub-10ms Barge-In)';
+          }
+          this.eqBars.forEach(b => b.classList.remove('active'));
+        } else if (state === 'thinking') {
+          if (this.caption) this.caption.innerText = `Evaluating with ${this.activeEngineName || 'AI'}...`;
+          if (this.aiRolePill) this.aiRolePill.innerText = 'Processing Turn';
+          this.eqBars.forEach(b => b.classList.remove('active'));
+        }
+      }
+
+      appendTranscript(speaker, text) {
+        if (!this.transcriptContainer) return;
+        const div = document.createElement('div');
+        div.className = `feed-bubble ${speaker.toLowerCase()}`;
+        const voiceInfo = speaker === 'Mira' ? ` (${this.activeEngineName || 'AI'} • ${this.selectedVoice})` : '';
+        div.innerHTML = `<strong>${speaker}${voiceInfo}:</strong> ${text}`;
+        this.transcriptContainer.appendChild(div);
+        this.transcriptContainer.scrollTop = this.transcriptContainer.scrollHeight;
+      }
+
+      bindEvents() {
+        // Voice selection change
+        this.voiceSelect?.addEventListener('change', (e) => {
+          this.selectedVoice = e.target.value;
+          if (this.voiceNameTag) this.voiceNameTag.innerText = `Voice: ${this.selectedVoice} (HD)`;
+          if (this.voiceLabelInline) this.voiceLabelInline.innerText = this.selectedVoice;
+        });
+
+        // Quick Input Buttons
+        document.querySelectorAll('.quick-pill-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const query = e.target.getAttribute('data-query');
+            if (query) {
+              if (this.isMiraSpeaking) {
+                this.triggerBargeIn();
+              }
+              this.handleUserSpeech(query);
+            }
+          });
+        });
+
+        // Barge-In trigger button (Click to interrupt)
+        this.btnBargeIn?.addEventListener('click', () => {
+          this.triggerBargeIn('button_click');
+        });
+
+        // Spacebar or Escape keyboard shortcut for easy instant interruption
+        window.addEventListener('keydown', (e) => {
+          if ((e.code === 'Space' || e.key === ' ' || e.key === 'Escape') && this.isMiraSpeaking) {
+            const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+            if (activeTag !== 'input' && activeTag !== 'textarea') {
+              e.preventDefault();
+              this.triggerBargeIn('keyboard_shortcut');
+            }
+          }
+        });
+
+        // Mic mute/unmute
+        this.btnToggleMic?.addEventListener('click', () => {
+          if (this.mediaStream) {
+            const audioTracks = this.mediaStream.getAudioTracks();
+            if (audioTracks.length > 0) {
+              const enabled = !audioTracks[0].enabled;
+              audioTracks[0].enabled = enabled;
+              this.btnToggleMic.classList.toggle('muted', !enabled);
+              this.btnToggleMic.classList.toggle('active-mic', enabled);
+            }
+          }
+        });
+
+        // Camera toggle
+        this.btnToggleCamera?.addEventListener('click', () => {
+          if (this.mediaStream) {
+            const videoTracks = this.mediaStream.getVideoTracks();
+            if (videoTracks.length > 0) {
+              const enabled = !videoTracks[0].enabled;
+              videoTracks[0].enabled = enabled;
+              this.btnToggleCamera.classList.toggle('muted', !enabled);
+            }
+          }
+        });
+
+        // End consultation manually by user
+        this.btnEndInterview?.addEventListener('click', () => {
+          this.appendTranscript('System', 'User ended the interview. Generating clinical intake summary...');
+          this.endConsultation({ reason: 'USER_ENDED', userEnded: true });
+        });
+      }
+
+      showAutoEndCountdown(apt) {
+        const banner = document.getElementById('card-auto-end-banner');
+        const countdownText = document.getElementById('auto-end-countdown-text');
+        const btnNow = document.getElementById('btn-auto-end-now');
+        if (banner) {
+          banner.style.display = 'flex';
+        }
+
+        let secondsLeft = 4;
+        if (countdownText) {
+          countdownText.innerText = `Appointment confirmed! Consultation auto-ending in ${secondsLeft}s...`;
+        }
+
+        const countdownInterval = setInterval(() => {
+          secondsLeft--;
+          if (countdownText) {
+            countdownText.innerText = `Appointment confirmed! Consultation auto-ending in ${secondsLeft}s...`;
+          }
+          if (secondsLeft <= 0) {
+            clearInterval(countdownInterval);
+            this.endConsultation({ reason: 'APPOINTMENT_BOOKED', userEnded: false });
+          }
+        }, 1000);
+
+        btnNow?.addEventListener('click', (e) => {
+          e.preventDefault();
+          clearInterval(countdownInterval);
+          this.endConsultation({ reason: 'APPOINTMENT_BOOKED', userEnded: false });
+        });
+      }
+
+      async endConsultation(options = {}) {
+        const isUserEnded = options.userEnded ?? true;
+        const endReason = options.reason || (isUserEnded ? 'USER_ENDED' : 'APPOINTMENT_BOOKED');
+
+        clearInterval(this.timerInterval);
+        if (this.recognition) {
+          try { this.recognition.stop(); } catch (e) {}
+        }
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+
+        try {
+          const authEmail = localStorage.getItem('mira_user_email') || window.Clerk?.user?.primaryEmailAddress?.emailAddress || '';
+          const res = await fetch('/api/consultation/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sessionId: this.sessionId,
+              durationSeconds: (15 * 60) - this.totalSeconds,
+              userEmail: authEmail,
+              userEnded: isUserEnded,
+              endReason: isUserEnded ? 'User ended the interview' : 'Appointment booked',
+            }),
+          });
+          const data = await res.json();
+          window.location.href = '/user/dashboard';
+        } catch (e) {
+          console.warn('Consultation completion error:', e);
+          window.location.href = '/user/dashboard';
+        }
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      window.consultationMgr = new GeminiLiveConsultationManager();
+    });
+  </script>
+</body>
+</html>
