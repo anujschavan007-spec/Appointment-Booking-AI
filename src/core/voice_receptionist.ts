@@ -18,6 +18,7 @@ export interface ReceptionistState {
   patientName?: string;
   patientPhone?: string;
   patientEmail?: string;
+  clerkUserId?: string;
   awaitingConfirmation?: boolean;
   bookingCompleted?: boolean;
   bookingCode?: string;
@@ -170,7 +171,7 @@ CRITICAL CONVERSATIONAL DIRECTIVES (SYSTEM PROMPT DRIVEN ONLY):
   public processTurn(
     callId: string,
     callerUtterance: string,
-    context?: { patientName?: string; patientEmail?: string; patientPhone?: string }
+    context?: { patientName?: string; patientEmail?: string; patientPhone?: string; clerkUserId?: string }
   ): ReceptionistTurnOutput {
     const state = this.getState(callId);
     if (context?.patientName && (!state.patientName || state.patientName === 'Patient')) {
@@ -181,6 +182,9 @@ CRITICAL CONVERSATIONAL DIRECTIVES (SYSTEM PROMPT DRIVEN ONLY):
     }
     if (context?.patientPhone && (!state.patientPhone || state.patientPhone === '9876543210')) {
       state.patientPhone = context.patientPhone;
+    }
+    if (context?.clerkUserId && !state.clerkUserId) {
+      state.clerkUserId = context.clerkUserId;
     }
     const text = callerUtterance.trim().toLowerCase();
 
@@ -495,6 +499,7 @@ CRITICAL CONVERSATIONAL DIRECTIVES (SYSTEM PROMPT DRIVEN ONLY):
             patientPhone: state.patientPhone || '9876543210',
             patientEmail: state.patientEmail || 'patient@miraai.health',
             reason: state.reason || 'Doctor consultation',
+            clerkUserId: state.clerkUserId || context?.clerkUserId,
           };
           const appointment = this.executeBookAppointment(bookingParams);
 
@@ -710,6 +715,7 @@ CRITICAL CONVERSATIONAL DIRECTIVES (SYSTEM PROMPT DRIVEN ONLY):
             patientPhone: state.patientPhone!,
             patientEmail: state.patientEmail!,
             reason: state.reason || 'Doctor consultation',
+            clerkUserId: state.clerkUserId || context?.clerkUserId,
           };
           const appointment = this.executeBookAppointment(bookingParams);
 

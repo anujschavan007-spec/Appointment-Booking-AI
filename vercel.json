@@ -1,0 +1,19 @@
+{
+  "framework": null,
+  "outputDirectory": "public",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/interview", "destination": "/interview.html" },
+    { "source": "/sign-in", "destination": "/sign-in.html" },
+    { "source": "/sign-up", "destination": "/sign-up.html" },
+    { "source": "/user-dashboard", "destination": "/user-dashboard.html" },
+    { "source": "/consent", "destination": "/consent.html" },
+    { "source": "/camera", "destination": "/camera.html" },
+    { "source": "/speed-check", "destination": "/speed-check.html" },
+    { "source": "/reference-image", "destination": "/reference-image.html" },
+    { "source": "/access-denied", "destination": "/access-denied.html" },
+    { "source": "/sso-callback", "destination": "/sso-callback.html" }
+  ]
+}

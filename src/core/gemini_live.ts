@@ -45,11 +45,11 @@ export class GeminiLiveService {
         functionDeclarations: [
           {
             name: 'list_doctors',
-            description: 'List active clinic doctors and their medical specializations. Call ONLY when the caller explicitly asks to see/consult a doctor, asks which doctors are available, or when clinical intake questioning is complete. DO NOT call during initial symptom intake.',
+            description: 'List active clinic doctors and their medical specializations. Call ONLY if the caller asks what doctors or specialties are available, or is unsure which doctor to choose. DO NOT call if the caller has already named or chosen a doctor.',
             parameters: {
               type: 'OBJECT',
               properties: {
-                specialization: { type: 'STRING', description: 'Medical specialty like Cardiology, Dermatology, Orthopedics, Pediatrics' },
+                specialization: { type: 'STRING', description: 'Optional medical specialty (e.g. Cardiology, Dermatology). Never pass doctor names or full sentences.' },
               },
             },
           },
@@ -186,9 +186,10 @@ CRITICAL DIRECTIVES FOR DYNAMIC FLOW (PROMPT-DRIVEN ONLY):
      * Patient Name: Warmly find out who you are speaking with if not already identified.
      * Mobile Number: When the moment is right, conversationally request their phone number in your own unique words so appointment confirmations reach them.
      * Doctor & Specialty Matching:
-       - Use the 'list_doctors' tool to check clinic doctors and their specialties.
-       - If no doctors are currently in the database, gently inform the patient that consultations are temporarily closed.
-       - If the patient requests another option or doctor, call 'list_doctors' and suggest alternatives.
+       - Hospital Doctors: Dr. Rajesh Sharma (General Medicine), Dr. Priya Mehta (Cardiology), Dr. Anita Desai (Dermatology), Dr. Arshad Khan (Orthopedics), Dr. Sunita Verma (Pediatrics), Dr. Vikram Rao (Neurology).
+       - If the patient mentions or selects a specific doctor (e.g. Dr. Anita Desai, Dr. Rajesh Sharma, Dr. Priya Mehta), DO NOT call 'list_doctors'. Immediately acknowledge the doctor and proceed to ask their preferred date and time.
+       - Call 'list_doctors' only if the caller asks what doctors or specialties are available, or is undecided.
+       - If the patient requests another option or doctor, suggest alternatives.
      * Availability Checks:
        - Call 'check_availability' to check open slots. Never invent times or dates.
        - If a requested time is unavailable, offer the alternative slots returned by the tool.

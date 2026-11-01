@@ -114,8 +114,9 @@ export class VoiceOrchestrator {
               startAt: tc.args.start_at || `${new Date().toISOString().substring(0, 10)}T16:30:00+05:30`,
               patientName: tc.args.patient_name || params.patientName,
               patientPhone: tc.args.patient_phone || '9811002233',
-              patientEmail: tc.args.patient_email || 'patient@miraai.health',
+              patientEmail: params.patientEmail || tc.args.patient_email || 'patient@miraai.health',
               reason: tc.args.reason || 'Clinical intake',
+              clerkUserId: params.patientId,
             });
 
             const session = this.clinicDb.getSession(params.sessionId);
@@ -156,6 +157,28 @@ export class VoiceOrchestrator {
               latencyBreakdown: { vadMs, sttMs: 20, llmTtftMs: 140, ttsTtfbMs: 35, totalEndToEndMs: vadMs + elapsedTotal },
             };
           } else if (tc.name === 'list_doctors') {
+            // Check if patient already specified a specific doctor in their text or tool args
+            const explicitDoc =
+              this.clinicDb.findDoctorRecord(params.userText) ||
+              (tc.args?.specialization ? this.clinicDb.findDoctorRecord(tc.args.specialization) : undefined);
+
+            if (explicitDoc) {
+              const reply = `Theek hai, ${explicitDoc.name} (${explicitDoc.specialization}). Aap kab aana chahte hain? Kal ya parso ka preferred time bataiye.`;
+              const elapsedTotal = Date.now() - turnStartTime;
+              this.recordTurn(params.userText, reply, elapsedTotal);
+              return {
+                text: reply,
+                isComplete: true,
+                actionTaken: 'DOCTOR_SELECTED',
+                toolExecuted: 'list_doctors',
+                toolParameters: { doctor_id: explicitDoc.id, doctor_name: explicitDoc.name },
+                toolResult: { selectedDoctor: explicitDoc },
+                modelUsed: this.geminiLive.modelName,
+                voiceUsed: this.geminiLive.voiceName,
+                latencyBreakdown: { vadMs, sttMs: 20, llmTtftMs: 140, ttsTtfbMs: 35, totalEndToEndMs: vadMs + elapsedTotal },
+              };
+            }
+
             const doctors = this.clinicDb.listDoctors(tc.args?.specialization);
             const docNames = doctors.map(d => `${d.name} (${d.specialization})`).join(', ');
             const reply = streamResult.text || (doctors.length === 0 ? "Humare paas abhi clinic mein koi doctors uplabdh nahi hain." : `Hospital mein ${docNames} uplabdh hain. Aap kisse consult karna chahenge?`);
@@ -236,6 +259,7 @@ export class VoiceOrchestrator {
         patientName: params.patientName,
         patientEmail: params.patientEmail,
         patientPhone: params.patientPhone || phoneMatch?.[1],
+        clerkUserId: params.patientId,
       });
 
       // Dynamic AI Natural Dialogue via Sarvam 105b Conversations ONLY for open symptom consultation inquiries

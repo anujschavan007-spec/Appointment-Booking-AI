@@ -639,9 +639,30 @@ const server = Bun.serve<WsSessionData>({
           clinicDb.updateSession(session);
 
           // Consultation confirmation email dispatch via Gmail SMTP to authenticated user
-          const authUser = getAuthenticatedUser(req);
+          const authUser = await getAuthenticatedUser(req);
           const patient = clinicDb.getPatient(session.patientId);
           const targetEmail = body.userEmail || authUser?.email || patient?.email || (session.patientPhone && session.patientPhone.includes('@') ? session.patientPhone : null);
+
+          // Synchronize appointment to database if present on session
+          if (session.appointment) {
+            const apt = session.appointment;
+            const existingApt = clinicDb.getAllAppointmentRecords().find(a => a.bookingCode === apt.bookingCode || a.id === apt.id);
+            if (!existingApt) {
+              clinicDb.bookAppointmentRecord({
+                doctorId: apt.doctorId || 'doc_mehta',
+                startAt: `${apt.appointmentDate || '2026-11-02'}T${apt.timeSlot || '14:00'}:00+05:30`,
+                patientName: apt.patientName || authUser?.fullName || 'Patient',
+                patientPhone: '9820011223',
+                patientEmail: targetEmail || authUser?.email || 'patient@miraai.care',
+                reason: session.summary?.chiefComplaint || 'Consultation Intake',
+                clerkUserId: authUser?.clerkUserId || session.patientId,
+              });
+            } else {
+              if (authUser?.clerkUserId) (existingApt as any).clerkUserId = authUser.clerkUserId;
+              if (targetEmail) existingApt.patientEmail = targetEmail;
+              if (authUser?.fullName) existingApt.patientName = authUser.fullName;
+            }
+          }
 
           let emailStatus: any = null;
           if (targetEmail && targetEmail.includes('@')) {
@@ -826,10 +847,42 @@ const server = Bun.serve<WsSessionData>({
           return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
         }
 
-        const userAppointments = clinicDb.getAllAppointmentRecords({ clerkUserId: user.clerkUserId });
+        const userAppointments = clinicDb.getAllAppointmentRecords({
+          clerkUserId: user.clerkUserId,
+          email: user.email,
+          patientName: user.fullName,
+        });
         const userSessions = clinicDb.getAllSessions().filter(
-          (s) => s.patientId === user.clerkUserId || (s.patientName && s.patientName.toLowerCase() === user.fullName.toLowerCase())
+          (s) =>
+            s.patientId === user.clerkUserId ||
+            (user.email && (s.patientPhone === user.email || (s as any).userEmail === user.email)) ||
+            (s.patientName && s.patientName.toLowerCase() === user.fullName.toLowerCase())
         );
+
+        // Include any appointments recorded on userSessions if not yet in userAppointments
+        for (const s of userSessions) {
+          if (s.appointment) {
+            const aptCode = s.appointment.bookingCode;
+            const exists = userAppointments.some((a) => a.bookingCode === aptCode || a.id === s.appointment.id);
+            if (!exists) {
+              userAppointments.push({
+                id: s.appointment.id || `apt_${Date.now()}`,
+                bookingCode: s.appointment.bookingCode,
+                doctorId: s.appointment.doctorId || 'doc_mehta',
+                doctorName: s.appointment.doctorName || 'Dr. Priya Mehta',
+                specialization: s.appointment.specialty || 'Cardiology',
+                patientName: s.appointment.patientName || user.fullName,
+                patientPhone: '9820011223',
+                patientEmail: user.email,
+                reason: s.summary?.chiefComplaint || 'Clinical Consultation',
+                startAt: `${s.appointment.appointmentDate || '2026-11-02'}T${s.appointment.timeSlot || '14:00'}:00+05:30`,
+                endAt: `${s.appointment.appointmentDate || '2026-11-02'}T${s.appointment.timeSlot || '14:15'}:00+05:30`,
+                status: (s.appointment.status || 'confirmed').toLowerCase() as any,
+                createdAt: new Date(s.appointment.createdAt || Date.now()).toISOString(),
+              });
+            }
+          }
+        }
 
         return new Response(
           JSON.stringify({

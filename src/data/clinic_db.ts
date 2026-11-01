@@ -41,6 +41,10 @@ export class ClinicDatabase {
     this.initSupabase();
   }
 
+  public seedStandardDoctors(): void {
+    this.seedTestDoctors();
+  }
+
   private initSupabase() {
     let url = process.env.SUPABASE_URL || '';
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
@@ -628,6 +632,24 @@ export class ClinicDatabase {
     };
   }
 
+  public listDoctors(specialization?: string): DoctorRecord[] {
+    const all = this.getAllDoctorRecords(true);
+    if (!specialization) return all;
+    const clean = specialization.toLowerCase().trim();
+    // 1. If query directly matches a specific doctor, return just that doctor
+    const docMatch = this.findDoctorRecord(clean);
+    if (docMatch) return [docMatch];
+
+    // 2. Filter by specialization, department, or doctor name
+    const filtered = all.filter(
+      (d) =>
+        d.specialization.toLowerCase().includes(clean) ||
+        (d.department && d.department.toLowerCase().includes(clean)) ||
+        d.name.toLowerCase().includes(clean)
+    );
+    return filtered.length > 0 ? filtered : all;
+  }
+
   // =========================================================================
   // 5. APPOINTMENTS & TRANSACTIONAL BOOKING (Anti-double booking guaranteed)
   // =========================================================================
@@ -637,6 +659,8 @@ export class ClinicDatabase {
     status?: string;
     patientSearch?: string;
     clerkUserId?: string;
+    email?: string;
+    patientName?: string;
   }): AppointmentRecord[] {
     const seen = new Set<string>();
     let list: AppointmentRecord[] = [];
@@ -653,9 +677,22 @@ export class ClinicDatabase {
     if (filter?.status) {
       list = list.filter((a) => a.status === filter.status);
     }
-    if (filter?.clerkUserId) {
-      const cleanSub = filter.clerkUserId.trim();
-      list = list.filter((a) => (a as any).clerkUserId === cleanSub || a.patientEmail === cleanSub);
+    if (filter?.clerkUserId || filter?.email || filter?.patientName) {
+      const cleanSub = filter.clerkUserId?.trim().toLowerCase();
+      const cleanEmail = filter.email?.trim().toLowerCase();
+      const cleanName = filter.patientName?.trim().toLowerCase();
+
+      list = list.filter((a) => {
+        const aClerk = (a as any).clerkUserId ? String((a as any).clerkUserId).trim().toLowerCase() : '';
+        const aEmail = a.patientEmail ? a.patientEmail.trim().toLowerCase() : '';
+        const aName = a.patientName ? a.patientName.trim().toLowerCase() : '';
+
+        const matchClerk = cleanSub && (aClerk === cleanSub || aEmail === cleanSub);
+        const matchEmail = cleanEmail && (aEmail === cleanEmail || aClerk === cleanEmail);
+        const matchName = cleanName && (aName === cleanName || aName.includes(cleanName) || cleanName.includes(aName));
+
+        return Boolean(matchClerk || matchEmail || matchName);
+      });
     }
     if (filter?.patientSearch) {
       const q = filter.patientSearch.toLowerCase().trim();

@@ -2,7 +2,7 @@
 // Timezone: Asia/Kolkata
 
 export interface NormalizedDateTime {
-  date: string; // YYYY-MM-DD
+  date?: string; // YYYY-MM-DD
   time?: string; // HH:MM 24h e.g. "10:30"
   displayTime?: string; // e.g. "10:30 AM"
   weekday: number; // 0=Sun, 1=Mon, ..., 6=Sat
@@ -30,14 +30,17 @@ export class HinglishDateNormalizer {
     const text = phrase.toLowerCase().trim();
     const ref = referenceDate ? new Date(referenceDate) : this.getNowIST();
     const targetDate = new Date(ref);
+    let hasDate = false;
 
     // 1. Detect Day Offset
     if (text.includes('parso') || text.includes('परसों') || text.includes('day after tomorrow')) {
       targetDate.setDate(targetDate.getDate() + 2);
+      hasDate = true;
     } else if (text.includes('kal') || text.includes('कल') || text.includes('tomorrow')) {
       targetDate.setDate(targetDate.getDate() + 1);
+      hasDate = true;
     } else if (text.includes('aaj') || text.includes('आज') || text.includes('today')) {
-      // today
+      hasDate = true;
     } else {
       // Check for specific days (somwar, mangalwar, etc.)
       const daysMap: Record<string, number> = {
@@ -72,6 +75,7 @@ export class HinglishDateNormalizer {
           let diff = dayIndex - currentDay;
           if (diff <= 0) diff += 7; // next week's day
           targetDate.setDate(targetDate.getDate() + diff);
+          hasDate = true;
           break;
         }
       }
@@ -83,10 +87,11 @@ export class HinglishDateNormalizer {
       const parsedIso = new Date(isoMatch[1]);
       if (!isNaN(parsedIso.getTime())) {
         targetDate.setTime(parsedIso.getTime());
+        hasDate = true;
       }
     }
 
-    const isoDateStr = this.formatDateISO(targetDate);
+    const isoDateStr = hasDate ? this.formatDateISO(targetDate) : undefined;
     const weekday = targetDate.getDay();
 
     // 2. Detect Time
